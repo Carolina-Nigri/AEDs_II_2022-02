@@ -45,7 +45,11 @@ class TP01q09{
         for(int i=0; i<n; i++){
             RAF.seek(8 * (n - i -1));
             val = RAF.readDouble();
-            MyIO.println(val);
+
+            if((val % 1) == 0)
+                MyIO.println((int)val);
+            else
+                MyIO.println(val);
         }
 
         RAF.close();
