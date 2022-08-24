@@ -3,7 +3,7 @@
  * 
  * @author Carolina Morais Nigri
  * @since 20/08/22
- * @version 21/08/22
+ * @version 24/08/22
  */
 
 import java.io.*;
@@ -11,10 +11,11 @@ import java.net.*;
 
 class TP01q08{
     /** 
-     * Metodo principal: le nomes e enderecos de sites ate encontrar FIM (@see isFIM), 
-     * pega o conteudo html da pagina (@see getHTML) e conta: vogais com e sem acento
-     * (@see imprimeQtdVogais), consoantes (@see imprimeQtdConsoantes) e tags "<br>" e 
-     * "<table>" (@see imprimeTags), mostrando resultados e o nome da pagina na tela
+     * Metodo principal: le nomes e enderecos de sites ate encontrar FIM (@see
+     * isFIM), pega o conteudo html da pagina (@see getHTML) e conta: vogais com e 
+     * sem acento (@see imprimeQtdVogais), consoantes (@see imprimeQtdConsoantes) e 
+     * tags "<br>" e "<table>" (@see imprimeTags), mostrando resultados e o nome da 
+     * pagina na tela
      * @param args String[]
      */
     public static void main(String[] args){
@@ -35,7 +36,7 @@ class TP01q08{
             imprimeTags(html);
             MyIO.print(nomePag);
             MyIO.println("");
-            
+             
             nomePag = MyIO.readLine();
         }
     } // fim main()
@@ -83,18 +84,27 @@ class TP01q08{
      * @param html String
      */
     public static void imprimeQtdVogais(String html){
-        String vogais = "aeiouáéíóúàèìòùãõâêîôû";
+        int[] vogais = {97,101,105,111,117,
+                        225,233,237,243,250,
+                        224,232,236,242,249,
+                        227,245,
+                        226,234,238,244,251};
         int qtd;
         char v;
 
-        for(int i=0; i<vogais.length(); i++){
+        for(int i=0; i<vogais.length; i++){
             qtd = 0;
-            v = vogais.charAt(i);
+            v = (char) vogais[i];
 
             for(int j=0; j<html.length(); j++){
                 if(html.charAt(j) == v)
                     qtd++;
             }
+            
+            if(v == 'a') 
+                qtd -= qtdTags(html, "table>");
+            else if(v == 'e')    
+                qtd -= qtdTags(html, "table>");
             
             MyIO.print(v+"("+qtd+") ");
         }
@@ -115,6 +125,12 @@ class TP01q08{
             }
         }
 
+        int table = qtdTags(html, "table>");
+        int br = qtdTags(html,"br>");
+
+        if(table > 0) qtd -= 3;
+        if(br > 0) qtd -= 2;
+
         MyIO.print("consoante("+qtd+") ");
     } // fim qtdConsoantes()
 
@@ -124,8 +140,8 @@ class TP01q08{
      * @param html String
      */
     public static void imprimeTags(String html){
-        String br = "<br>";
-        String table = "<table>";
+        String br = "br>";
+        String table = "table>";
 
         MyIO.print("<br>("+qtdTags(html,br)+") ");
         MyIO.print("<table>("+qtdTags(html,table)+") ");
