@@ -198,9 +198,13 @@ class Game{
                          ((int)Math.round(upvotes)) + "% "); 
        
         // imprime atributo avg_pt em h e min, se for 0 imprime "null"
-        if(avg_pt == 0) System.out.print("null ");
-        else System.out.print((avg_pt / 60)+"h " + (avg_pt % 60) +"m ");
-        
+        if(avg_pt == 0){
+            System.out.print("null ");
+        } else {
+            if((avg_pt / 60) != 0) System.out.print((avg_pt / 60)+"h ");
+            if((avg_pt % 60) != 0) System.out.print((avg_pt % 60) +"m ");
+        } 
+
         // imprime atributo website, se for vazio imprime "null"
         if(developers == "") System.out.print("null");
         else System.out.print(developers);
@@ -244,6 +248,7 @@ class Game{
             if(id == arqID){
                 parseGame(game);
                 print();
+              
                 achou = true;
             }
         } while( ((game = input.readLine()) != null) && (!achou) );
@@ -315,7 +320,7 @@ class Game{
         
         // reais
         this.price = Float.parseFloat(atr[5]);
-        this.upvotes = 100 * (float) ( 1.00 - (float) Integer.parseInt(atr[13]) / Integer.parseInt(atr[12]) );
+        this.upvotes = 100 * ( (float) Integer.parseInt(atr[12]) / ( Integer.parseInt(atr[12]) + Integer.parseInt(atr[13]) ) );
         
         // booleanos
         this.windows = Boolean.parseBoolean(atr[9]);
@@ -336,6 +341,8 @@ class Game{
         SimpleDateFormat formatter;
         if(atr[2].charAt(6) == ',')
             formatter = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
+        else if(atr[2].charAt(5) == ',')
+            formatter = new SimpleDateFormat("MMM d, yyyy", Locale.ENGLISH);
         else
             formatter = new SimpleDateFormat("MMM yyyy", Locale.ENGLISH);
 
