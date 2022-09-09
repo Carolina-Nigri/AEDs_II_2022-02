@@ -3,319 +3,191 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <math.h>
 
-// protótipos
-bool isFIM(char str[]);
+// definições
+#define MAX_LIN 100 
+#define MAX_COL 50
 
 // structs (registros)
-typedef struct{
+typedef struct String{
+    char chars[MAX_LIN];
+} String;
+
+typedef struct LongString{
+    char chars[MAX_LIN * 10];
+} LongString;
+
+/*
+ * !!TODO : achar forma mais fácil de fazer data em C
+ */
+typedef struct Date{ 
     int dia, mes, ano;
 } Date;
 
-typedef struct {
+/*
+ * !!TODO : fazer uma array de strings, alocando dinamicamente, com tamanhos variados,
+ * de forma q consiga ler até o fim do array (languages, genres)
+ */
+typedef struct Game{
     int app_id, age, dlcs, avg_pt;
-    // String name, owners, website, developers;
-    Date release_date;
+    String *name, *owners, *website, *developers;
+    Date* release_date;
     float price, upvotes;
-    // String[] languages, genres;
-    bool windows, mac, Glinux;
+    // String* languages[MAX_COL], genres[MAX_COL];
+    bool windows, mac, game_linux;
 } Game;
 
+// protótipos
+bool isFIM(String* str);
+int calcRound(float x);
+Game* clone(Game* atual);
+void print(Game* game);
+String* newString();
+LongString* newLongString();
+Date* newDate();
+Game* newGame();
+Game* newGameAtr(int app_id, String* name, Date* release_date,  String* owners,
+                 int age, float price, int dlcs, /*String[] languages,*/  
+                 String* website, bool windows, bool mac, bool game_linux, 
+                 float upvotes, int avg_pt, String* developers/*, String*[] genres*/);
+
 // função principal
-    // lê ids dos games da entrada padrão até achar FIM, procura id no csv e imprime
 int main(){
-    char gameID[20]; 
-    scanf(" %20[^\n]", gameID);
+    Date* d = newDate();
+    d->dia = 9;
+    d->mes = 9;
+    d->ano = 2022;
 
-    while(!isFIM(gameID)){
-        int id = atoi(gameID);
-        
-        Game game;
-    //     game.readFromFilePrintID("/tmp/games.csv",id); 
+    Game* game = newGameAtr(1,"CS",d,"abc",10,2.50,2,"https://www.google.com/",true,false, false, 88.97564,150,"a,b,c");
 
-        scanf(" %20[^\n]", gameID);
-    }
+    print(game);
 
     return 0;
 }
 
-// verifica se string é igual a "FIM"
-bool isFIM(char str[]){
+// funções de uso geral
+bool isFIM(String* str){ // verifica se string é igual a "FIM"
     bool fim = false;
 
-    if(strlen(str) == 3 && str[0] == 'F' && str[1] == 'I' && str[2] == 'M')
+    if(strlen(str->chars) == 3 && str->chars[0] == 'F' && str->chars[1] == 'I' && str->chars[2] == 'M')
         fim = true;
     
     return fim;
 } 
+int calcRound(float x){ // arredonda um número real para inteiro mais próximo
+    int a = (int) x;
 
-// funções do registro Game:
+    if((x - a) >= 0.5)
+        a += 1;
 
-/*
-// clone (sobreescreve função da superclasse Object)
-@Override
-public Game clone() {
-    Game novo = new Game(app_id, name, release_date, owners, age, price, dlcs, 
-                    languages, website, windows, mac, linux, upvotes, avg_pt,
-                    developers, genres);
+    return a;
+}
+
+// funções do struct Game
+/**
+ * !!TODO : incluir atributos String[] languages e genres 
+ * em todas as funções do struct Game
+ */
+Game* clone(Game* atual){ // clona o struct Game
+    Game* novo = newGameAtr(atual->app_id, atual->name, atual->release_date, 
+                            atual->owners, atual->age, atual->price, atual->dlcs, 
+                            /*atual->languages,*/ atual->website, atual->windows, 
+                            atual->mac, atual->game_linux, atual->upvotes, 
+                            atual->avg_pt, atual->developers/*, atual->genres*/);
 
     return novo;
 }
-
-// imprimir
-public void print(){
+/**
+ * !!TODO: formatar data p/imprimir
+ */
+void print(Game* game){ // imprime o struct Game
     // formata a data
-    SimpleDateFormat formatter = new SimpleDateFormat("MMM/yyyy", Locale.ENGLISH);
-    String date = formatter.format(release_date);
+    // SimpleDateFormat formatter = new SimpleDateFormat("MMM/yyyy", Locale.ENGLISH);
+    // String date = formatter.format(release_date);
 
-    // imprime atributos app_id, name, date, owners, age
-    System.out.print(app_id + " " + name + " " + date + " " + owners + " " + 
-                        age + " ");
-    
-    // imprime atributo price com duas casas decimais                          
-    System.out.printf(Locale.ENGLISH, "%.2f", price);
-    
-    // imprime atributos dlcs, languages[] 
-    System.out.print(" " + dlcs + " " + toStringArray(languages) + " ");
-    
+    String* date = "MMM/yyyy";
+
+    // imprime atributos app_id, name, date, owners, age, price e s
+    printf("%i %s %s %s %i %.2f %i ", game->app_id, game->name, date, game->owners,
+                                         game->age, game->price, game->dlcs);
+
+    // imprime atributo languages[]
+    // printf("%s ", toStringArray(game->languages));
+
     // imprime atributo website, se for vazio imprime "null"
-    if(website == "") System.out.print("null");
-    else System.out.print(website);
+    if(game->website == "") printf("null ");
+    else printf("%s ", game->website);
     
-    // imprime atributos windows, mac, linux, upvotes arredondado
-    System.out.print(" " + windows + " " + mac + " " + linux  + " " + 
-                        ((int)Math.round(upvotes)) + "% "); 
+    // imprime atributos windows, mac, linux como "true" ou "false"
+    if(game->windows) printf("true ");
+    else printf("false ");
+    if(game->mac) printf("true ");
+    else printf("false ");
+    if(game->game_linux) printf("true ");
+    else printf("false ");
+
+    // imprime upvotes arredondado
+    printf("%i%% ", calcRound(game->upvotes)); 
     
     // imprime atributo avg_pt em h e min, se for 0 imprime "null"
-    if(avg_pt == 0) System.out.print("null ");
-    else System.out.print((avg_pt / 60)+"h " + (avg_pt % 60) +"m ");
-    
-    // imprime atributo website, se for vazio imprime "null"
-    if(developers == "") System.out.print("null");
-    else System.out.print(developers);
+    if(game->avg_pt == 0){
+        printf("null ");
+    } else {
+        if((game->avg_pt / 60) != 0) printf("%ih ", (game->avg_pt / 60));
+        if((game->avg_pt % 60) != 0) printf("%im ", (game->avg_pt % 60));
+    } 
 
+    // imprime atributo website, se for vazio imprime "null"
+    if(game->developers == "") printf("null ");
+    else printf("%s ", game->developers);
+    
     // imprime atributo genres[]
-    System.out.print(" " + toStringArray(genres));
+    // printf(toStringArray(game->genres));
     
     // nova linha
-    System.out.println("");
+    puts("");
 }
 
-// tranforma array de strings em string
-public String toStringArray(String[] array){
-    String str = "[";
-    int i = 0;
-    
-    while( array[i] != null ){
-        str += array[i];
-
-        if(array[i+1] != null)
-            str += ", ";
-
-        i++;
-    }
-
-    str += "]";
-
-    return str;
+// funções de alocação
+String* newString(){
+	return (String*) malloc(sizeof(String));
 }
-
-// ler do arquivo e imprimir jogo de ID específico 
-public void readFromFilePrintID(String file, int id) throws Exception{
-    BufferedReader input = new BufferedReader(new FileReader(file));
-    String game = input.readLine();
-    int arqID;
-    boolean achou = false;
-    
-    do{
-        arqID = saveID(game);
-
-        if(id == arqID){
-            parseGame(game);
-            print();
-            achou = true;
-        }
-    } while( ((game = input.readLine()) != null) && (!achou) );
-        
-    input.close();
+LongString* newLongString(){
+	return (LongString*) malloc(sizeof(LongString));
 }
-
-// faz o parse somente do ID da string game
-public int saveID(String game){
-    String gameID = "";
-    int id;
-    int i = 0;
-
-    while( game.charAt(i) != ',' ){
-        gameID += game.charAt(i);
-
-        i++;
-    }
-
-    id = Integer.parseInt(gameID);
-
-    return id;
+Date* newDate(){
+	return (Date*) malloc(sizeof(Date));
 }
-
-// faz o parse da string, separando atributos lidos
-public void parseGame(String game) throws Exception{
-    String[] atr = new String[17]; 
-    int first;
-    int last;
-
-    // cria array separando atributos 
-    for(int i=0; i<atr.length; i++){
-        first = 0;
-        
-        if(game.length() == 0){ 
-            atr[i] = game;
-        } else{
-            if(i == 16 && game.charAt(first) != '"'){
-                last = game.length();
-            } else{
-                last = findNextSep(game);
-            }
-        
-            if(game.charAt(first) == '"'){
-                atr[i] = cutString(game, ++first, --last);
-                
-                first = last + 2;
-            } else{
-                atr[i] = cutString(game, first, last);
-
-                first = last + 1;
-            }
-            
-            game = cutString(game, first, game.length());
-        }
-    }
-
-    // salva atributos
-    getAttributes(atr);
+Game* newGame(){
+	return (Game*) malloc(sizeof(Game));
 }
+/**
+ * !!TODO : incluir atributos String[] languages e genres
+ */
+Game* newGameAtr(int app_id, String* name, Date* release_date, String* owners,
+                 int age, float price, int dlcs, /*String[] languages,*/  
+                 String* website, bool windows, bool mac, bool game_linux, 
+                 float upvotes, int avg_pt, String* developers/*, String*[] genres*/){
 
-// salva atributos no objeto
-public void getAttributes(String[] atr) throws Exception {
-    // inteiros
-    this.app_id = Integer.parseInt(atr[0]);
-    this.age = Integer.parseInt(atr[4]);
-    this.dlcs = Integer.parseInt(atr[6]);
-    this.avg_pt = Integer.parseInt(atr[14]);
-    
-    // reais
-    this.price = Float.parseFloat(atr[5]);
-    this.upvotes = 100 * (float) ( 1.00 - (float) Integer.parseInt(atr[13]) / Integer.parseInt(atr[12]) );
-    
-    // booleanos
-    this.windows = Boolean.parseBoolean(atr[9]);
-    this.mac = Boolean.parseBoolean(atr[10]);
-    this.linux = Boolean.parseBoolean(atr[11]);
-    
-    // strings
-    this.name = atr[1];
-    this.owners = atr[3];
-    this.website = atr[8];
-    this.developers = atr[15];
-    
-    // arrays de strings
-    this.languages = createArrayStrings(atr[7]);
-    this.genres = createArrayStrings(atr[16]);
-    
-    // date
-    SimpleDateFormat formatter;
-    if(atr[2].charAt(6) == ',')
-        formatter = new SimpleDateFormat("MMM dd, yyyy", Locale.ENGLISH);
-    else
-        formatter = new SimpleDateFormat("MMM yyyy", Locale.ENGLISH);
+    Game* game = newGame();
 
-    this.release_date = formatter.parse(atr[2]);
+    game -> app_id = app_id;
+    game -> name = name;
+    game -> release_date = release_date;
+    game -> owners = owners;
+    game -> age = age;
+    game -> price = price;
+    game -> dlcs = dlcs;
+    // game -> languages = languages;
+    game -> website = website;
+    game -> windows = windows;
+    game -> mac = mac;
+    game -> game_linux = game_linux;
+    game -> upvotes = upvotes;
+    game -> avg_pt = avg_pt;
+    game -> developers = developers;
+    // game -> genres = genres;
+
+    return game;
 }
-
-// transforma string em array de strings
-public static String[] createArrayStrings(String str) {
-    String[] array = new String[50];
-    int i = 0, j = 0;
-    array[0] = "";
-
-    if(str.length() > 0){
-        if(str.charAt(i) == '['){
-            i++;
-
-            while( (i<str.length()) && (str.charAt(i) != ']') ){
-                
-                if(str.charAt(i) == 39){ // char 39 = '
-                    i++;
-                    
-                    if(str.charAt(i) == ','){
-                        j++;
-                        i+=2;
-                        
-                        array[j] = "";
-                    }
-                } else{ 
-                    array[j] += str.charAt(i);
-
-                    i++;
-                }
-
-            }
-        } 
-        else{
-            while(i < str.length()){
-                array[j] += str.charAt(i);
-
-                i++;
-
-                if( (i != str.length()) && (str.charAt(i) == ',') ){
-                    j++;
-                    i++;
-
-                    array[j] = "";
-                }
-            }
-        }
-    }
-
-    return array;
-}
-
-// acha separador de atributos da string do .csv
-public static int findNextSep(String strCsv){
-    int index = -1;
-    boolean sep = false;
-
-    if(strCsv.charAt(0) == '"'){
-        index += 2;
-
-        while(strCsv.charAt(index) != '"'){
-            index++;
-        }
-        
-        index++;
-        
-        if((index != strCsv.length()) && (strCsv.charAt(index) == ','))
-                sep = true;
-
-    } else{
-        while(index < strCsv.length() && !sep){
-            index++;
-
-            if(strCsv.charAt(index) == ',') 
-                sep = true;
-        }
-    }
-        
-    return index;
-}
-
-// cria uma substring
-public static String cutString(String str, int first, int last){
-    String res = "";
-
-    for(int i=first; i<last; i++){
-        res += str.charAt(i);
-    }
-    
-    return res;
-}
-*/
