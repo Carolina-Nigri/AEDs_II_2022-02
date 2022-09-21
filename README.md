@@ -1,4 +1,4 @@
-# codigos-java
+# AEDs_II_2022-02
 
 - Lab: exercícios do laboratório
 - Provas: questões de provas práticas
