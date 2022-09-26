@@ -3,7 +3,7 @@ import java.text.*;
 import java.util.*;
 
 // classe de execução
-class TP02q03 {
+class TP02q04 {
     /**
      * Le ids dos games da entrada padrao ate achar FIM, procura id no csv,
      * faz o parse do game para objeto e salva no final de uma Lista.
@@ -27,11 +27,13 @@ class TP02q03 {
             gameID = input.readLine(); 
         }
 
+        listaGames.ordena();
+
         String gameName = input.readLine(); 
         
         while(!isFIM(gameName)){
             // pesquisa nomes na lista de Games 
-            if(listaGames.pesquisaSequencial(gameName))
+            if(listaGames.pesquisaBinaria(gameName))
                 System.out.println("SIM");
             else
                 System.out.println("NAO");
@@ -52,7 +54,7 @@ class TP02q03 {
 
 }
 
-// classe Lista de Games com implementação de pesquisa sequencial
+// classe Lista de Games com implementação de pesquisa binaria
 class Lista {
     // atributos
     private Game[] array;
@@ -91,24 +93,90 @@ class Lista {
     }
 
     /**
-     * Procura o nome do objeto Game de forma sequencial e 
+     * Ordena o array pelo nome do Game (algoritmo usado: seleção)
+     */    
+    public void ordena() {
+        for(int i = 0; i < (n - 1); i++){
+            int menor = i;
+            
+            // acha menor 
+            for(int j = (i + 1); j < n; j++){
+                // verifica se nome do array[j] vem antes de array[menor]
+                if( vemAntes(array[j].getName(), array[menor].getName()) ){
+                    menor = j;
+                }
+            }
+
+            // troca menor com atual
+            swap(menor, i);
+        }  
+    }
+
+    // troca dois objetos no array da Lista
+    public void swap(int i, int j){
+        Game temp = array[i].clone();
+
+        array[i] = array[j];
+        array[j] = temp;
+    }
+    
+    /**
+     * Procura o nome do objeto Game usando pesquisa binária e 
      * retorna se ele esta na Lista
      * @param name String nome do game a ser pesquisado
      * @return <code>true</code> se achar o nome nos objetos do array,
      * <code>false</code> caso contrario
      */
-    public boolean pesquisaSequencial(String name) {
+    public boolean pesquisaBinaria(String name) {
         boolean achou = false;
-        int i = 0;
+        int dir = n-1, esq = 0, meio;
 
-        while( (i < n) && !achou ) {
-            if( name.equals(array[i].getName()) )
+        while( (esq <= dir) && !achou ){
+            meio = (esq + dir) / 2;
+
+            if( name.equals(array[meio].getName()) )
                 achou = true;
-
-            i++;
+            else if( vemAntes(name, array[meio].getName()) )
+                dir = meio - 1;
+            else
+                esq = meio + 1;
         }
         
         return achou;
+    }
+
+    // verifica se a primeira string vem antes da segunda (ordem alfabetica)
+    public static boolean vemAntes(String str1, String str2) {
+        boolean primeira = false, saiu = false;
+        int maior = str1.length(), menor = str2.length();
+        
+        // salva tamanhos das strings
+        if(str1.length() < str2.length()){
+            maior = str2.length();
+            menor = str1.length(); 
+            primeira = true;
+        } 
+        
+        int i = 0;
+        
+        while( i < maior && !saiu ){
+            if(i < menor){
+                if(str1.charAt(i) != str2.charAt(i)){
+                    if(str1.charAt(i) < str2.charAt(i))
+                        primeira = true;
+                    else
+                        primeira = false;
+                    
+                    saiu = true;
+                }
+
+                i++;
+            } else{
+                saiu = true;
+            }
+        }
+
+        return primeira;
     }
 }
 
