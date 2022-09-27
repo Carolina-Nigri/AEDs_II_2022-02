@@ -10,6 +10,8 @@ class TP02q03 {
      * Depois le nomes de jogos ate achar FIM e pesquisa eles na Lista de Games 
      */
     public static void main(String[] args) throws Exception {
+        long start = System.currentTimeMillis(); // tempo de inicio
+        FileWriter logFile = new FileWriter("matricula_sequencial.txt");
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         
         Lista listaGames = new Lista(50);
@@ -28,16 +30,23 @@ class TP02q03 {
         }
 
         String gameName = input.readLine(); 
-        
+
         while(!isFIM(gameName)){
             // pesquisa nomes na lista de Games 
             if(listaGames.pesquisaSequencial(gameName))
                 System.out.println("SIM");
             else
                 System.out.println("NAO");
-
+                
             gameName = input.readLine(); 
         }
+        
+        long end = System.currentTimeMillis(); // tempo de fim
+        // calcula tempo de execucao
+        float time = (end - start);
+        float comparacoes = listaGames.getComp();
+        logFile.write("761400\t"+time+"\t"+comparacoes+"\t");
+        logFile.close();
     }
 
     // verifica se string é igual a "FIM"
@@ -57,6 +66,7 @@ class Lista {
     // atributos
     private Game[] array;
     private int n; // qtd de elementos na Lista
+    private int comp; // comparacoes da pesquisa
  
     // construtores
     public Lista() {
@@ -64,7 +74,7 @@ class Lista {
     }
     public Lista(int tam) {
        array = new Game[tam];
-       n = 0; 
+       n = comp = 0; 
     }
     
     // gets
@@ -73,6 +83,9 @@ class Lista {
     }
     public int getN() {
         return n;
+    }
+    public int getComp() {
+        return comp;
     }
 
     /**
@@ -102,6 +115,8 @@ class Lista {
         int i = 0;
 
         while( (i < n) && !achou ) {
+            comp++; // conta comparacoes
+        
             if( name.equals(array[i].getName()) )
                 achou = true;
 
