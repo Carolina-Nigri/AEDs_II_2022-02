@@ -123,7 +123,7 @@ class FilaCircular {
         int j = 0, i = primeiro;
         
         while( j < n ){
-            System.out.print("["+i+"] ");
+            System.out.print("["+j+"] ");
             array[i].print();
 
             i = (i + 1) % array.length;
