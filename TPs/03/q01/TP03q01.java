@@ -13,7 +13,7 @@ class TP03q01 {
         long start = System.currentTimeMillis(); // tempo de inicio
         FileWriter logFile = new FileWriter("matricula_selecao.txt");
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
-        String file = "../games.csv";
+        String file = "/tmp/games.csv";
         
         Lista listaGames = new Lista(100);
         String gameID = input.readLine(); 
@@ -153,7 +153,6 @@ class Lista {
      */
     public void mostrar() {
         for(int i = 0; i < n; i++){
-            System.out.print("["+i+"] ");
             array[i].print();
         }
     }
