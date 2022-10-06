@@ -11,7 +11,7 @@ class TP03q06 {
      */
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis(); // tempo de inicio
-        FileWriter logFile = new FileWriter("matricula_.txt");
+        FileWriter logFile = new FileWriter("matricula_quicksort.txt");
         String file = "/tmp/games.csv";
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         
@@ -86,24 +86,49 @@ class Lista {
     }
 
     /**
-     * Ordena o array pelo nome do Game (algoritmo usado: seleção)
+     * Ordena o array pelo release_date do Game, desempata pelo nome (Quicksort)
      */    
     public void ordena() {
-        for(int i = 0; i < (n - 1); i++){
-            int menor = i;
-            
-            // acha menor 
-            for(int j = (i + 1); j < n; j++){
-                // verifica se nome do array[j] vem antes de array[menor]
-                comp++; // conta comparacoes
-                if( vemAntes(array[j].getName(), array[menor].getName()) ){
-                    menor = j;
-                }
-            }
+        quicksort(0, (n - 1));
+    }
 
-            // troca menor com atual
-            swap(menor, i);
-        }  
+    /**
+	 * Algoritmo de ordenacao Quicksort.
+     * @param int esq inicio do array a ser ordenado
+     * @param int dir fim do array a ser ordenado
+	 */
+    private void quicksort(int esq, int dir) {
+        int i = esq, j = dir;
+        Game pivo = array[((dir + esq) / 2)];
+
+        while(i <= j) {
+            // data e nome vem antes da do pivo
+            while(array[i].getRelease_date().before(pivo.getRelease_date()) || array[i].getRelease_date().equals(pivo.getRelease_date()) && vemAntes(array[i].getName(), pivo.getName())) {
+                comp++;
+
+                i++;
+            }
+           
+            // data e nome vem depois da do pivo
+            while(array[j].getRelease_date().after(pivo.getRelease_date()) || array[j].getRelease_date().equals(pivo.getRelease_date()) && vemAntes(pivo.getName(), array[j].getName())) {
+                comp++;
+                
+                j--;
+            }
+            
+            if(i <= j) {
+                swap(i, j);
+                mov+=3;
+                
+                i++;
+                j--;
+            }
+        }
+
+        if(esq < j)  
+            quicksort(esq, j);
+        if(i < dir)  
+            quicksort(i, dir);
     }
 
     // verifica se a primeira string vem antes da segunda (ordem alfabetica)
@@ -153,7 +178,6 @@ class Lista {
      */
     public void mostrar() {
         for(int i = 0; i < n; i++){
-            System.out.print("["+i+"] ");
             array[i].print();
         }
     }
