@@ -11,9 +11,9 @@ class TP03q03 {
      */
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis(); // tempo de inicio
-        FileWriter logFile = new FileWriter("matricula_.txt");
-        String file = "/tmp/games.csv";
+        FileWriter logFile = new FileWriter("matricula_insercao.txt");
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+        String file = "/tmp/games.csv";
         
         Lista listaGames = new Lista(100);
         String gameID = input.readLine(); 
@@ -86,24 +86,26 @@ class Lista {
     }
 
     /**
-     * Ordena o array pelo nome do Game (algoritmo usado: seleção)
+     * Ordena o array pelo app_id do Game (Inserção)
      */    
     public void ordena() {
-        for(int i = 0; i < (n - 1); i++){
-            int menor = i;
+        for(int i = 1; i < n; i++) {
+            Game tmp = array[i];
+            mov++;
             
-            // acha menor 
-            for(int j = (i + 1); j < n; j++){
-                // verifica se nome do array[j] vem antes de array[menor]
-                comp++; // conta comparacoes
-                if( vemAntes(array[j].getName(), array[menor].getName()) ){
-                    menor = j;
-                }
-            }
+            int j = i - 1;
 
-            // troca menor com atual
-            swap(menor, i);
-        }  
+            while( (j >= 0) && (array[j].getApp_id() > tmp.getApp_id()) ) {
+                comp++;
+                array[j + 1] = array[j];
+                
+                mov++;
+                j--;
+            }
+           
+            array[j + 1] = tmp;
+            mov++;
+        }
     }
 
     // verifica se a primeira string vem antes da segunda (ordem alfabetica)
@@ -153,7 +155,6 @@ class Lista {
      */
     public void mostrar() {
         for(int i = 0; i < n; i++){
-            System.out.print("["+i+"] ");
             array[i].print();
         }
     }
