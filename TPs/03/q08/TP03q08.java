@@ -1,3 +1,8 @@
+/**
+ * @author Carolina Morais Nigri
+ * @version 11/10/22
+ */
+
 import java.io.*;
 import java.text.*;
 import java.util.*;
@@ -11,9 +16,9 @@ class TP03q08 {
      */
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis(); // tempo de inicio
-        FileWriter logFile = new FileWriter("matricula_.txt");
-        String file = "/tmp/games.csv";
+        FileWriter logFile = new FileWriter("matricula_bolha.txt");
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
+        String file = "/tmp/games.csv";
         
         Lista listaGames = new Lista(100);
         String gameID = input.readLine(); 
@@ -68,7 +73,7 @@ class Lista {
     }
     public Lista(int tam) {
        array = new Game[tam];
-       n = 0; 
+       comp = mov = n = 0;
     }
     
     // gets
@@ -86,24 +91,23 @@ class Lista {
     }
 
     /**
-     * Ordena o array pelo nome do Game (algoritmo usado: seleção)
+     * Ordena o array pelo atributo developers e "desempata" pelo nome do Game (Bolha)
      */    
     public void ordena() {
-        for(int i = 0; i < (n - 1); i++){
-            int menor = i;
-            
-            // acha menor 
-            for(int j = (i + 1); j < n; j++){
-                // verifica se nome do array[j] vem antes de array[menor]
-                comp++; // conta comparacoes
-                if( vemAntes(array[j].getName(), array[menor].getName()) ){
-                    menor = j;
+        comp = mov = 0;
+        
+        for(int i = (n - 1); i > 0; i--){
+			for(int j = 0; j < i; j++){
+				comp++;
+                if( vemAntes(array[j+1].getDevelopers(), array[j].getDevelopers()) ){
+                    swap(j, j+1);
+                    mov+=3;
+				} else if( array[j+1].getDevelopers().equals(array[j].getDevelopers()) && vemAntes(array[j+1].getName(), array[j].getName()) ) { 
+                    swap(j, j+1);
+                    mov+=3;
                 }
-            }
-
-            // troca menor com atual
-            swap(menor, i);
-        }  
+			}
+		}
     }
 
     // verifica se a primeira string vem antes da segunda (ordem alfabetica)
@@ -153,32 +157,10 @@ class Lista {
      */
     public void mostrar() {
         for(int i = 0; i < n; i++){
-            System.out.print("["+i+"] ");
             array[i].print();
         }
     }
 
-    /**
-     * Insere um objeto Game na primeira posicao da lista depois de mover 
-     * os demais objetos para o fim da lista
-     * @param game Game objeto a ser inserido
-     * @throws Exception Se a lista estiver cheia
-     */
-    public void inserirInicio(Game game) throws Exception {
-        // verifica se a lista esta cheia
-        if(n >= array.length){
-            throw new Exception("Erro ao inserir! Lista cheia");
-        }
-
-        // move objetos para o fim do array
-        for(int i = n; i > 0; i--){
-            array[i] = array[i-1];
-        }
-
-        array[0] = game;
-        n++;
-    }
-    
     /**
      * Insere um objeto Game na ultima posicao da lista
      * @param game Game objeto a ser inserido
@@ -192,100 +174,6 @@ class Lista {
  
         array[n] = game;
         n++;
-    }
-
-    /**
-     * Insere um objeto Game em uma posicao especifica depois de remanejar 
-     * os demais objetos
-     * @param game Game objeto a ser inserido
-     * @param pos Posicao de insercao
-     * @throws Exception Se a lista estiver cheia ou a posicao invalida
-     */
-    public void inserir(Game game, int pos) throws Exception {
-        // verifica se a lista esta cheia
-        if(n >= array.length){
-            throw new Exception("Erro ao inserir! Lista cheia");
-        }
-        // verifica se a posicao eh invalida
-        if(pos < 0 || pos > n){
-            throw new Exception("Erro ao inserir! Posicao invalida");
-        }
-
-        // move objetos para liberar pos do array
-        for(int i = n; i > pos; i--){
-            array[i] = array[i-1];
-        }
-
-        array[pos] = game;
-        n++;
-    }
-
-    /**
-     * Remove um objeto Game da primeira posicao da lista depois movimenta 
-     * os demais objetos para o inicio da mesma
-     * @return removido Game objeto a ser removido
-     * @throws Exception Se a lista estiver vazia
-     */
-    public Game removerInicio() throws Exception {
-        // verifica se a lista esta vazia
-        if (n == 0) {
-            throw new Exception("Erro ao remover! Lista vazia");
-        }
-
-        Game removido = array[0];
-        n--;
-
-        // move objetos para o inicio do array
-        for(int i = 0; i < n; i++){
-            array[i] = array[i+1];
-        }
-
-        return removido;
-    }
-
-    /**
-     * Remove um objeto Game da ultima posicao da lista
-     * @return removido Game objeto a ser removido
-     * @throws Exception Se a lista estiver vazia
-     */
-    public Game removerFim() throws Exception {
-        // verifica se a lista esta vazia
-        if (n == 0) {
-            throw new Exception("Erro ao remover! Lista vazia");
-        }
-
-        n--;
-        Game removido = array[n];
-
-        return removido;
-    }
-
-    /**
-     * Remove um objeto Game de uma posicao especifica da lista e 
-     * movimenta os demais objetos para o inicio da mesma
-     * @param pos Posicao de remocao
-     * @return removido Game objeto a ser removido
-     * @throws Exception Se a lista estiver vazia ou a posicao for invalida
-     */
-    public Game remover(int pos) throws Exception {
-        // verifica se a lista esta vazia
-        if (n == 0) {
-            throw new Exception("Erro ao remover! Lista vazia");
-        }
-        // verifica se a posicao eh invalida
-        if (pos < 0 || pos >= n) {
-            throw new Exception("Erro ao remover! Posicao invalida");
-        }
-
-        Game removido = array[pos];
-        n--;
-
-        // move objetos para ocupar posicao liberada
-        for(int i = pos; i < n; i++){
-            array[i] = array[i+1];
-        }
-
-        return removido;
     }
 }
 
