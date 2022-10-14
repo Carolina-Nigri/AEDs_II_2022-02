@@ -11,7 +11,7 @@ class TP03q05 {
      */
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis(); // tempo de inicio
-        FileWriter logFile = new FileWriter("matricula_.txt");
+        FileWriter logFile = new FileWriter("matricula_heapsort.txt");
         String file = "/tmp/games.csv";
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         
@@ -68,7 +68,7 @@ class Lista {
     }
     public Lista(int tam) {
        array = new Game[tam];
-       n = 0; 
+       comp = mov = n = 0; 
     }
     
     // gets
@@ -86,25 +86,104 @@ class Lista {
     }
 
     /**
-     * Ordena o array pelo nome do Game (algoritmo usado: seleção)
+     * Ordena o array pelo release_date do Game (Heapsort)
      */    
     public void ordena() {
-        for(int i = 0; i < (n - 1); i++){
-            int menor = i;
-            
-            // acha menor 
-            for(int j = (i + 1); j < n; j++){
-                // verifica se nome do array[j] vem antes de array[menor]
-                comp++; // conta comparacoes
-                if( vemAntes(array[j].getName(), array[menor].getName()) ){
-                    menor = j;
-                }
-            }
+        comp = mov = 0;
 
-            // troca menor com atual
-            swap(menor, i);
-        }  
+        // cria um array temporario a partir da posicao 1 com o array original 
+        Game[] tmp = new Game[n+1];
+        
+        for(int i = 0; i < n; i++){
+            tmp[i+1] = array[i];
+        }
+        
+        // salva array temporario no original
+        array = tmp;
+
+        // constroi o heap, adicionando um elemento a cada iteracao
+        for(int tamHeap = 2; tamHeap <= n; tamHeap++){
+            construir(tamHeap);
+        }
+
+        int tamHeap = n;
+        
+        while(tamHeap > 1){
+            // troca raiz com a ultima folha do ultimo nivel  
+            swap(1, tamHeap);
+            mov+=3;
+            tamHeap--;
+
+            reconstruir(tamHeap);
+        }
+
+        // colocar o array comecando da posicao 0 novamente
+        tmp = array;
+        array = new Game[n];
+        
+        for(int i = 0; i < n; i++){
+            array[i] = tmp[i+1];
+        }
     }
+    
+    // constroi o heap invertido, verificando se filhos sao menores que pais
+    public void construir(int tamHeap){
+        int i = tamHeap;
+
+        comp++;
+        // verifica se filho vem depois do pai e, se verdadeiro, troca os dois
+        while( i > 1 && ( array[i].getRelease_date().after(array[i/2].getRelease_date()) ||
+                          array[i].getRelease_date().equals(array[i/2].getRelease_date()) 
+                                && vemAntes(array[i/2].getName(), array[i].getName()) ) ){
+            
+            swap(i, i/2);
+            mov+=3;
+
+            i /= 2;
+        }
+    }
+
+    // reconstroi o heap invertido, verificando se pais sao maiores que os filhos
+    public void reconstruir(int tamHeap){
+        int i = 1;
+        
+        while( i <= (tamHeap/2) ){
+            int filho = getMaiorFilho(i, tamHeap);
+            
+            comp++;
+            // verifica se pai vem antes do filho e troca os dois se verdadeiro
+            if( array[i].getRelease_date().before(array[filho].getRelease_date()) ||
+                array[i].getRelease_date().equals(array[filho].getRelease_date())
+                    && vemAntes(array[i].getName(), array[filho].getName()) ){
+                
+                swap(i, filho);
+                mov+=3;
+                
+                i = filho;
+            } else{
+                i = tamHeap; // finaliza reconstrucao
+            }
+        }
+    }
+
+    // retorna posicao do maior filho do heap
+    public int getMaiorFilho(int i, int tamHeap){
+        int filho;
+        
+        comp++;
+        // (2*i) eh o unico filho (ultima folha) OU eh maior que o filho (2*i+1)
+        if( (2*i) == tamHeap || 
+            array[2*i].getRelease_date().after(array[2*i+1].getRelease_date()) ||
+            array[2*i].getRelease_date().equals(array[2*i+1].getRelease_date()) 
+                && vemAntes(array[2*i+1].getName(), array[2*i].getName()) ){
+           
+            filho = 2*i;
+        } else{ // (2*i+1) eh o maior filho
+           filho = 2*i + 1;
+        }
+        
+        return filho;
+    } 
 
     // verifica se a primeira string vem antes da segunda (ordem alfabetica)
     public static boolean vemAntes(String str1, String str2) {
@@ -153,30 +232,8 @@ class Lista {
      */
     public void mostrar() {
         for(int i = 0; i < n; i++){
-            System.out.print("["+i+"] ");
             array[i].print();
         }
-    }
-
-    /**
-     * Insere um objeto Game na primeira posicao da lista depois de mover 
-     * os demais objetos para o fim da lista
-     * @param game Game objeto a ser inserido
-     * @throws Exception Se a lista estiver cheia
-     */
-    public void inserirInicio(Game game) throws Exception {
-        // verifica se a lista esta cheia
-        if(n >= array.length){
-            throw new Exception("Erro ao inserir! Lista cheia");
-        }
-
-        // move objetos para o fim do array
-        for(int i = n; i > 0; i--){
-            array[i] = array[i-1];
-        }
-
-        array[0] = game;
-        n++;
     }
     
     /**
@@ -192,100 +249,6 @@ class Lista {
  
         array[n] = game;
         n++;
-    }
-
-    /**
-     * Insere um objeto Game em uma posicao especifica depois de remanejar 
-     * os demais objetos
-     * @param game Game objeto a ser inserido
-     * @param pos Posicao de insercao
-     * @throws Exception Se a lista estiver cheia ou a posicao invalida
-     */
-    public void inserir(Game game, int pos) throws Exception {
-        // verifica se a lista esta cheia
-        if(n >= array.length){
-            throw new Exception("Erro ao inserir! Lista cheia");
-        }
-        // verifica se a posicao eh invalida
-        if(pos < 0 || pos > n){
-            throw new Exception("Erro ao inserir! Posicao invalida");
-        }
-
-        // move objetos para liberar pos do array
-        for(int i = n; i > pos; i--){
-            array[i] = array[i-1];
-        }
-
-        array[pos] = game;
-        n++;
-    }
-
-    /**
-     * Remove um objeto Game da primeira posicao da lista depois movimenta 
-     * os demais objetos para o inicio da mesma
-     * @return removido Game objeto a ser removido
-     * @throws Exception Se a lista estiver vazia
-     */
-    public Game removerInicio() throws Exception {
-        // verifica se a lista esta vazia
-        if (n == 0) {
-            throw new Exception("Erro ao remover! Lista vazia");
-        }
-
-        Game removido = array[0];
-        n--;
-
-        // move objetos para o inicio do array
-        for(int i = 0; i < n; i++){
-            array[i] = array[i+1];
-        }
-
-        return removido;
-    }
-
-    /**
-     * Remove um objeto Game da ultima posicao da lista
-     * @return removido Game objeto a ser removido
-     * @throws Exception Se a lista estiver vazia
-     */
-    public Game removerFim() throws Exception {
-        // verifica se a lista esta vazia
-        if (n == 0) {
-            throw new Exception("Erro ao remover! Lista vazia");
-        }
-
-        n--;
-        Game removido = array[n];
-
-        return removido;
-    }
-
-    /**
-     * Remove um objeto Game de uma posicao especifica da lista e 
-     * movimenta os demais objetos para o inicio da mesma
-     * @param pos Posicao de remocao
-     * @return removido Game objeto a ser removido
-     * @throws Exception Se a lista estiver vazia ou a posicao for invalida
-     */
-    public Game remover(int pos) throws Exception {
-        // verifica se a lista esta vazia
-        if (n == 0) {
-            throw new Exception("Erro ao remover! Lista vazia");
-        }
-        // verifica se a posicao eh invalida
-        if (pos < 0 || pos >= n) {
-            throw new Exception("Erro ao remover! Posicao invalida");
-        }
-
-        Game removido = array[pos];
-        n--;
-
-        // move objetos para ocupar posicao liberada
-        for(int i = pos; i < n; i++){
-            array[i] = array[i+1];
-        }
-
-        return removido;
     }
 }
 
