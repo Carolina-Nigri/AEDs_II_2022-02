@@ -1,0 +1,6 @@
+/**
+ * Classe No
+ */
+class No{
+    
+}
