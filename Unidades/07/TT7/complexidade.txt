@@ -1,11 +1,78 @@
-Análise de complexidade dos métodos da classe Agenda:
+/** Carolina Morais Nigri **/
 
-* void inserirArvore(char letra):
+// n = tamanho da lista
+// h = altura da árvore
+// e = número de nós da árvore
 
-* boolean inserir(Contato contato):
+=> Análise de complexidade dos métodos da classe No:
 
-* boolean remover(String nome):
+    * inserir(Contato contato):
+        1 operação pra trocar ponteiro do ultimo = O(1)
 
-* boolean pesquisar(String nome):
+    * remover(String nome):
+        Custo de pesquisarPos(nome) + remover(pos)
+        = O(n) + O(n)
+        = O(n)
 
-* boolean boolean pesquisar(int cpf):
+    * remover(int pos):
+        - Melhor caso: custo de removerInicio() = O(1)
+        - Pior caso: custo de removerFim() = O(n)
+        - Custo de remover de uma posição específica 
+            Operação pra percorrer até posição p (pior caso: p = n-2) = O(n)
+        = O(n)
+
+    * removerInicio():
+        1 operação pra trocar ponteiro do primeiro = O(1)
+
+    * removerFim():
+        Operação pra percorrer até posição n-1 = O(n)
+
+    * pesquisarPos(String nome):
+        - Melhor caso: elemento na primeira posição = O(1)
+        - Pior caso: elemento na última posição = O(n)
+        = O(n)
+
+    * pesquisar(String nome):
+        - Melhor caso: elemento na primeira posição = O(1)
+        - Pior caso: elemento na última posição = O(n)
+        = O(n)
+
+    * pesquisar(int cpf):
+        - Melhor caso: elemento na primeira posição = O(1)
+        - Pior caso: elemento na última posição = O(n)
+        = O(n)
+    
+=> Análise de complexidade dos métodos da classe Agenda:
+
+    * inserirArvore(char letra, No i):
+        - Melhor caso: inserção da raiz = O(1) 
+        - Pior caso: posição correta do elemento é após a folha da parte da árvore 
+            de maior altura = O(h)
+        = O(h)
+
+    * inserir(Contato contato):
+        Custo de pesquisar(letra, no) + No.inserir(contato)
+        = O(h) + O(1)
+        = O(h)
+
+    * remover(String nome):
+        Custo de pesquisar(letra, no) + No.remover(nome)
+        = O(h) + O(n) => custo linear
+
+    * pesquisar(String nome):
+        Custo de pesquisar(letra, no) + No.pesquisar(nome)
+        = O(h) + O(n) => custo linear
+
+    * pesquisar(char letra, No i):
+        - Melhor caso: elemento na raiz = O(1)
+        - Pior caso: elemento está na folha da parte da árvore de maior altura = O(h)
+        = O(h)
+
+    * pesquisar(int cpf) => chama função recursiva pesquisarPre(int cpf, No i):
+        - Melhor caso: elemento está na raiz => custo de 1 pesquisa em 
+            No.pesquisar(cpf) = O(n)
+        - Pior caso: elemento está na última posição do caminhamento (como foi feito
+            o caminhamento primeiro pra esquerda, a posição mais à direita) +
+            custo de (e) pesquisas em No.pesquisar(cpf) = (e*n)
+
+        => Se e >= n, custo pode ser O(n²)

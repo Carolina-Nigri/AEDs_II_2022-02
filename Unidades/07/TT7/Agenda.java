@@ -1,7 +1,7 @@
 /**
  * Classe Agenda
  * @author Carolina Nigri
- * @version 27/10/22
+ * @version 28/10/22
  */
 class Agenda{
     // Atributos
@@ -36,6 +36,24 @@ class Agenda{
         }
     }
     /**
+     * Chama caminhamento da árvore, imprimindo todos os elementos da Agenda
+     */
+    public void print(){
+        caminharPre(this.raiz);
+    }
+    /**
+	 * Caminhamento recursivo na árvore, imprimindo elementos 
+     * começando da raiz
+	 * @param i No em análise
+	 */
+	private void caminharPre(No i){
+		if(i != null){
+			i.print(); // imprime conteúdo do nó
+			caminharPre(i.esq); // percorre esquerda
+			caminharPre(i.dir); // percorre direita
+		}
+	}
+    /**
      * Insere uma letra no nó da árvore binária (método iterativo que
      * chama o recursivo que faz a inserção propriamente dita)
      * @param letra <code>char</code> a ser inserida
@@ -54,12 +72,12 @@ class Agenda{
         try {
             if(i == null){ // chegou à posição certa de inserção da letra na árvore
                 i = new No(letra);
-            } else if(letra < i.getLetra()){ // letra tem que estar à esquerda (menor)
+            } else if(letra < i.letra){ // letra tem que estar à esquerda (menor)
                 // percorre esquerda da árvore recursivamente
-                i.setEsq( inserirArvore(letra, i.getEsq()) ); 
-            } else if(letra > i.getLetra()){ // letra tem que estar à direita (maior)
+                i.esq = inserirArvore(letra, i.esq); 
+            } else if(letra > i.letra){ // letra tem que estar à direita (maior)
                 // percorre direita da árvore recursivamente
-                i.setDir( inserirArvore(letra, i.getDir()) );
+                i.dir = inserirArvore(letra, i.dir);
             } else{ // letra é igual a alguma das já existentes na árvore 
                 Exception equals = new Exception();
                 throw equals;
@@ -81,7 +99,7 @@ class Agenda{
 
         // pesquisar posição de inserção do contato pela primeira letra do nome
         No pos = pesquisar(contato.getNome().charAt(0), this.raiz);
-
+        
         if(pos != null){
             // inserir na lista do nó
             sucesso = pos.inserir(contato);
@@ -136,12 +154,14 @@ class Agenda{
     private No pesquisar(char letra, No i){
         No pos = null;
 
-        if(i.getLetra() == letra){ // achou 
-            pos = i;
-        } else if(i.getLetra() < letra){ // pesquisa à esquerda
-            pos = pesquisar(letra, i.getEsq());
-        } else if(i.getLetra() > letra){ // pesquisa à direita
-            pos = pesquisar(letra, i.getDir());
+        if(i != null){
+            if(i.letra == letra){ // achou 
+                pos = i;
+            } else if(letra < i.letra){ // pesquisa à esquerda
+                pos = pesquisar(letra, i.esq);
+            } else if(letra > i.letra){ // pesquisa à direita
+                pos = pesquisar(letra, i.dir);
+            }
         }
 
         return pos;
@@ -168,9 +188,9 @@ class Agenda{
             achou = i.pesquisar(cpf); // pesquisa na lista do nó
 			
             if(!achou) 
-                achou = pesquisarPre(cpf, i.getEsq()); // percorre a esquerda
+                achou = pesquisarPre(cpf, i.esq); // percorre a esquerda
             if(!achou) 
-                achou = pesquisarPre(cpf, i.getDir()); // percorre a direita
+                achou = pesquisarPre(cpf, i.dir); // percorre a direita
 		}
 
         return achou;

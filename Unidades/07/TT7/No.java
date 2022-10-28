@@ -1,61 +1,24 @@
 /**
  * Classe No
  * @author Carolina Nigri
- * @version 27/10/22
+ * @version 28/10/22
  */
 class No{
     // Atributos
-    private char letra; // elemento do nó
-    private No esq, dir; // ponteiros para nós da esquerda e da direita
-    private Celula primeiro, ultimo; // ponteiros para primeira e última células
+    public char letra; // elemento do nó
+    public No esq, dir; // ponteiros para nós da esquerda e da direita
+    public Celula primeiro, ultimo; // ponteiros para primeira e última células
    
     // Construtores
     public No(){
-        this(' ', null, null);
+        this(' ');
     }
     public No(char letra){
-        this(letra, null, null);
-    }
-    public No(char letra, No esq, No dir){
         this.letra = letra;
-        this.esq = esq;
-        this.dir = dir;
-        this.primeiro = new Celula( new Contato() ); // head (Contato vazio)
-        this.ultimo = this.primeiro; // lista vazia -> primeiro=ultimo
+        this.esq = this.dir = null;
+        Contato head = new Contato(); // head (Contato vazio)
+        this.ultimo = this.primeiro = new Celula(head); // lista vazia
     }
-
-    // Getters e setters
-    public char getLetra(){
-        return letra;
-    }
-    public void setLetra(char letra){
-        this.letra = letra;
-    }
-    public No getEsq(){
-        return esq;
-    }
-    public void setEsq(No esq){
-        this.esq = esq;
-    }
-    public No getDir(){
-        return dir;
-    }
-    public void setDir(No dir){
-        this.dir = dir;
-    }
-    public Celula getPrimeiro(){
-        return primeiro;
-    }
-    public void setPrimeiro(Celula primeiro){
-        this.primeiro = primeiro;
-    }
-    public Celula getUltimo(){
-        return ultimo;
-    }
-    public void setUltimo(Celula ultimo){
-        this.ultimo = ultimo;
-    }
-    
     // Métodos
     /**
 	 * Calcula o tamanho, em número de elementos, da lista
@@ -64,11 +27,29 @@ class No{
     public int tamanho(){
         int tamanho = 0; 
         
-        for(Celula i = primeiro; i != ultimo; i = i.getProx()){
+        for(Celula i = primeiro; i != ultimo; i = i.prox){
             tamanho++;
         }
         
         return tamanho;
+    }
+    /**
+     * Imprime o No
+     */
+    public void print(){
+        System.out.println("No ("+letra+"):");
+        System.out.print("Lista: ");
+
+        if(primeiro == ultimo){
+            System.out.println("Vazia");
+        } else{
+            System.out.println("");
+            int j = 0;
+            for(Celula i = primeiro.prox; i != null ; i = i.prox, j++){
+                System.out.print("["+j+"] ");
+                i.contato.print(); // imprime dados do contato
+            }
+        }
     }
     /**
      * Insere um contato no fim da lista do nó
@@ -78,8 +59,8 @@ class No{
      */
     public boolean inserir(Contato contato){
         // insere no fim da lista encadeada
-        ultimo.setProx( new Celula(contato) );
-		ultimo = ultimo.getProx();
+        ultimo.prox = new Celula(contato);
+		ultimo = ultimo.prox;
 
         return true;
     }
@@ -121,10 +102,10 @@ class No{
         } else{
             // Caminhar até a posição anterior à remoção
             Celula i = primeiro;
-            for(int j = 0; j < pos; j++, i = i.getProx());
+            for(int j = 0; j < pos; j++, i = i.prox);
             
             // muda o prox de i p/célula na posição após a que se deseja remover 
-            i.setProx( i.getProx().getProx() );
+            i.prox = i.prox.prox;
             sucesso = true;
         }
 
@@ -144,7 +125,7 @@ class No{
 		}
 
         // muda o head para a célula removida (remoção lógica)
-        primeiro = primeiro.getProx();
+        primeiro = primeiro.prox;
         sucesso = true;
         
 		return sucesso;
@@ -164,10 +145,10 @@ class No{
 
         // Caminhar ate a penúltima célula
         Celula i;
-        for(i = primeiro; i.getProx() != ultimo; i = i.getProx());
+        for(i = primeiro; i.prox != ultimo; i = i.prox);
 
         ultimo = i;
-        ultimo.setProx(null);
+        ultimo.prox = null;
         i = null;
 
         sucesso = true;
@@ -185,13 +166,13 @@ class No{
         boolean achou = false;
 		
         // percorre lista encadeada
-        Celula i = primeiro.getProx();
+        Celula i = primeiro.prox;
         while( i != null && !achou ){
             pos++;
-            if(nome.equals(i.getContato().getNome())){
+            if(nome.equals(i.contato.getNome())){
                 achou = true;
             }
-            i = i.getProx();
+            i = i.prox;
 		}
 		
         return pos;
@@ -205,12 +186,12 @@ class No{
 		boolean achou = false;
 		
         // percorre lista encadeada
-        Celula i = primeiro.getProx();
+        Celula i = primeiro.prox;
         while( i != null && !achou ){
-            if(nome.equals(i.getContato().getNome())){
+            if(nome.equals(i.contato.getNome())){
                 achou = true;
             }
-            i = i.getProx();
+            i = i.prox;
 		}
 		
         return achou;
@@ -224,12 +205,12 @@ class No{
 		boolean achou = false;
 		
         // percorre lista encadeada
-        Celula i = primeiro.getProx();
+        Celula i = primeiro.prox;
         while( i != null && !achou ){
-            if(cpf == i.getContato().getCpf()){
+            if(cpf == i.contato.getCpf()){
                 achou = true;
             }
-            i = i.getProx();
+            i = i.prox;
 		}
 		
         return achou;

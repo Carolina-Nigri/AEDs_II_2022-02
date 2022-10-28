@@ -1,7 +1,7 @@
 /**
  * Classe Contato
  * @author Carolina Nigri
- * @version 27/10/22
+ * @version 28/10/22
  */
 class Contato{
     // Atributos
@@ -43,5 +43,13 @@ class Contato{
     }
     public void setCpf(int cpf){
         this.cpf = cpf;
+    }
+
+    // Métodos
+    /**
+     * Imprime um Contato
+     */
+    public void print(){   
+        System.out.println(nome+" "+telefone+" "+email+" "+cpf);
     }
 }
