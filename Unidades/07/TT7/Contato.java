@@ -1,21 +1,25 @@
 /**
  * Classe Contato
+ * @author Carolina Nigri
+ * @version 27/10/22
  */
 class Contato{
-    // atributos
+    // Atributos
     private String nome, telefone, email;
-    private int CPF;
+    private int cpf;
 
-    // construtores
-    public Contato(){ }
-    public Contato(String nome, String telefone, String email, int CPF){
+    // Construtores
+    public Contato(){
+        this("", "", "", -1);
+    }
+    public Contato(String nome, String telefone, String email, int cpf){
         this.nome = nome;
         this.telefone = telefone;
         this.email = email;
-        this.CPF = CPF;
+        this.cpf = cpf;
     }
 
-    // getters e setters
+    // Getters e setters
     public String getNome(){
         return nome;
     }
@@ -34,10 +38,10 @@ class Contato{
     public void setEmail(String email){
         this.email = email;
     }
-    public int getCPF(){
-        return CPF;
+    public int getCpf(){
+        return cpf;
     }
-    public void setCPF(int CPF){
-        this.CPF = CPF;
+    public void setCpf(int cpf){
+        this.cpf = cpf;
     }
 }

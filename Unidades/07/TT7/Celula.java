@@ -1,17 +1,36 @@
 /**
  * Classe Celula
+ * @author Carolina Nigri
+ * @version 27/10/22
  */
 class Celula{
-    // atributos
-    public Contato contato; // elemento da celula
-    public Celula prox; // ponteiro para proxima celula
+    // Atributos
+    private Contato contato; // elemento da célula
+    private Celula prox; // ponteiro para próxima célula
     
-    // construtores
+    // Construtores
     public Celula(){
-        this( new Contato() );
+        this(null, null);
     }
     public Celula(Contato contato){
+        this(contato, null);
+    }
+    public Celula(Contato contato, Celula prox){
         this.contato = contato;
-        this.prox = null;
+        this.prox = prox;
+    }
+
+    // Getters e setters
+    public Contato getContato(){
+        return contato;
+    }
+    public void setContato(Contato contato){
+        this.contato = contato;
+    }
+    public Celula getProx(){
+        return prox;
+    }
+    public void setProx(Celula prox){
+        this.prox = prox;
     }
 }

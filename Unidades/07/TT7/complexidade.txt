@@ -1,0 +1,11 @@
+Análise de complexidade dos métodos da classe Agenda:
+
+* void inserirArvore(char letra):
+
+* boolean inserir(Contato contato):
+
+* boolean remover(String nome):
+
+* boolean pesquisar(String nome):
+
+* boolean boolean pesquisar(int cpf):
