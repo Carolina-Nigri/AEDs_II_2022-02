@@ -22,18 +22,17 @@
 #include <string.h>
 #include <stdbool.h>
 #include <math.h>
+#include <err.h>
 // -------------------------------------------------------------------------------- //
 // Definitions
 #define MAX_GAMES 2000
 #define MAX_FIELD_SIZE 250
 #define MAX_STRING_ARRAY_SIZE 100
 // -------------------------------------------------------------------------------- //
-// Structs
 typedef struct{
     int year,
         month;
 } Date;
-
 typedef struct{
     char name[MAX_FIELD_SIZE],
          owners[MAX_FIELD_SIZE],
@@ -46,12 +45,18 @@ typedef struct{
     float price, upvotes;
     bool windows_os, mac_os, linux_os;
 } Game;
-// -------------------------------------------------------------------------------- //
+// Celula
+typedef struct Celula {
+	Game elemento;        // Elemento inserido na celula
+	struct Celula* prox; // Aponta a celula prox
+} Celula;
 // Pilha
-Game array[MAX_GAMES];
-int n;
+Celula* primeiro;
+Celula* ultimo;
 // -------------------------------------------------------------------------------- //
 // Prototipos
+Celula* novaCelula(Game elemento);
+void start();
 void mostrar();
 void inserir(Game game);
 Game remover();
@@ -75,7 +80,7 @@ int main(){
     int id, i = 0;
 
     // inicializar Pilha
-    n = 0;
+    start();
 
     scanf(" %s",gameID); 
     
@@ -93,7 +98,6 @@ int main(){
 
         scanf(" %s",gameID); 
     }
-
 
     // qtd de objetos a serem inseridos/removidos
     int qtd;
@@ -127,31 +131,45 @@ int main(){
 }
 // -------------------------------------------------------------------------------- //
 // Funcoes da Pilha
+Celula* novaCelula(Game elemento){
+   Celula* nova = (Celula*) malloc(sizeof(Celula));
+   nova->elemento = elemento;
+   nova->prox = NULL;
+  
+   return nova;
+}
+void start(){
+    Game empty;
+    game_start(&empty);
+    
+    primeiro = novaCelula(empty);
+    ultimo = primeiro;
+}
 void mostrar(){
-    for(int i = 0; i < n; i++){
-        printf("[%i] ", i);
-        game_print(&array[i]);
+    int j = 0;
+    for(Celula* i = primeiro->prox; i != NULL; i = i->prox, j++){
+        printf("[%i] ", j);
+        game_print( &(i->elemento) );
     }
 }
-void inserir(Game game){
-    // verifica se a pilha esta cheia
-    if(n >= MAX_GAMES){
-        printf("Erro ao inserir! Pilha cheia");
-        exit(1);
-    }
-
-    array[n] = game;
-    n++;
+void inserir(Game x){
+    ultimo->prox = novaCelula(x);
+    ultimo = ultimo->prox;
 }
 Game remover(){
-    // verifica se a pilha esta vazia
-    if (n == 0) {
-        printf("Erro ao remover! Pilha vazia");
-        exit(1);
-    }
+    if(primeiro == ultimo){
+        errx(1, "Erro ao remover!");
+    } 
 
-    n--;
-    Game removido = array[n];
+    // Caminhar ate a penultima celula:
+    Celula* i;
+    for(i = primeiro; i->prox != ultimo; i = i->prox);
+
+    Game removido = ultimo->elemento;
+    ultimo = i;
+    
+    free(ultimo->prox);
+    i = ultimo->prox = NULL;
 
     return removido;
 }
