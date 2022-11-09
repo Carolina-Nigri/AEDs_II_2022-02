@@ -21,6 +21,7 @@ void caminharPos();
 No* caminharPosRec(No* i);
 void caminharPre();
 No* caminharPreRec(No* i);
+int getAltura(No* i, int altura);
 
 // principal
 int main(){
@@ -42,6 +43,9 @@ int main(){
     caminharPos();
     printf("Caminhamento pre-fixado\n");
     caminharPre();
+
+    // descobre altura
+    printf("Altura = %i\n", getAltura(raiz, 0));
 
     return 0;
 }
@@ -99,4 +103,24 @@ No* caminharPreRec(No* i){
         caminharPreRec(i->esq);
         caminharPreRec(i->dir);
     }
+}
+int getAltura(No* i, int altura){
+    if(i == NULL){
+        altura--;
+    } else{
+        printf("altura = %i\n", altura);
+        int alturaEsq = getAltura(i->esq, altura+1);
+        printf("alturaEsq = %i\n", alturaEsq);
+        int alturaDir = getAltura(i->dir, altura+1);
+        printf("alturaDir = %i\n", alturaDir);
+
+        if(alturaEsq > alturaDir)
+            altura = alturaEsq; 
+        else    
+            altura = alturaDir;   
+        
+        printf("altura = %i\n", altura);
+    }
+
+    return altura;
 }
