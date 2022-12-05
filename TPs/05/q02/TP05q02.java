@@ -34,7 +34,7 @@ class TP05q02 {
 
         // qtd de objetos a serem inseridos/removidos
         int qtd = Integer.parseInt(input.readLine());
-        String comando;
+        String comando, name;
         
         // le insercoes/remocoes e mostra nome do jogo quando remover
         for(int i = 0; i < qtd; i++){
@@ -48,10 +48,9 @@ class TP05q02 {
                 game.readFromFileID(file, id);
                 arvoreGames.inserir(game);
             } else if(comando.charAt(0) == 'R'){ // remover
-                id = Integer.parseInt( comando.substring(2, comando.length()) );
+                name = comando.substring(2, comando.length());
                 
-                game.readFromFileID(file, id);
-                arvoreGames.remover(game);
+                arvoreGames.remover(name);
             }
         }
 
@@ -59,17 +58,17 @@ class TP05q02 {
         FileWriter logFile = new FileWriter("matricula_arvoreBinaria.txt");
         
         // realiza pesquisas e mostra caminhos e resultado
-        while(/* alguma condicao de parada */){
-            gameID = input.readLine();
-            id = Integer.parseInt(gameID);
+        name = input.readLine();
 
-            Game game = new Game();
-            game.readFromFileID(file, id);
+        while(!isFIM(name)){
+            System.out.println(name);
 
-            if(arvoreGames.pesquisar(game.getName()))
+            if(arvoreGames.pesquisar(name))
                 System.out.println("SIM");
             else
                 System.out.println("NAO");
+
+            name = input.readLine();
         }
 
         long end = System.currentTimeMillis(); // tempo de fim
@@ -153,28 +152,28 @@ class ArvoreBinaria {
     }
     /**
      * Chama função recursiva que remove elemento da arvore
-     * @param game Game a ser removido
+     * @param name nome do Game a ser removido
      * @throws Exception se percorrer parte da arvore e não encontrar elemento
       */
-    public void remover(Game game) throws Exception{
-        raiz = remover(game, raiz);
+    public void remover(String name) throws Exception{
+        raiz = remover(name, raiz);
     }
     /**
      * Remove elemento da arvore binaria recursivamente
-     * @param game Game a ser removido
+     * @param name nome do Game a ser removido
      * @param i No em analise
      * @return No em analise
      * @throws Exception se percorrer parte da arvore e não encontrar elemento
      */
-    private No remover(Game game, No i) throws Exception{
+    private No remover(String name, No i) throws Exception{
         if(i == null){ // nao encontrou elemento
 			throw new Exception("Erro ao remover! Elemento nao encontrado");
-		} else if( game.getName().compareTo(i.elemento.getName()) > 0 ){
+		} else if( name.compareTo(i.elemento.getName()) > 0 ){
 			// nome do game a remover vem antes do elemento do nó i => direita
-            i.dir = remover(game, i.dir);
-		} else if( game.getName().compareTo(i.elemento.getName()) < 0 ){
+            i.dir = remover(name, i.dir);
+		} else if( name.compareTo(i.elemento.getName()) < 0 ){
 			// nome do game a remover vem depois do elemento do nó i => esquerda
-            i.esq = remover(game, i.esq);
+            i.esq = remover(name, i.esq);
 		} else if(i.dir == null){ // Sem no a direita
 			i = i.esq;	
 		} else if(i.esq == null){ // Sem no a esquerda
@@ -208,7 +207,7 @@ class ArvoreBinaria {
      */
     public boolean pesquisar(String name){
         comp = 0;
-        System.out.println("raiz");
+        System.out.print("raiz ");
         return pesquisar(name, raiz);
     }
     /**
@@ -220,18 +219,20 @@ class ArvoreBinaria {
     private boolean pesquisar(String name, No i){
         boolean achou = false;
 
-        if( name.equals(i.elemento.getName()) ){ // encontrou nome do game procurado
+        if(i == null){ // chegou ao ultimo no possivel e nao encontrou elemento
+            achou = false;
+        } else if( name.equals(i.elemento.getName()) ){ // encontrou nome do game procurado
             comp++;
             achou = true;
         } else if( name.compareTo(i.elemento.getName()) > 0 ){
             // nome do game a pesquisar vem antes do elemento do nó i => direita
             comp+=2;
-            System.out.println("dir");
+            System.out.print("dir ");
             achou = pesquisar(name, i.dir);
         } else if( name.compareTo(i.elemento.getName()) < 0 ){
             // nome do game a pesquisar vem depois do elemento do nó i => esquerda
             comp+=3;
-            System.out.println("esq");
+            System.out.print("esq ");
             achou = pesquisar(name, i.esq);
         }
 
