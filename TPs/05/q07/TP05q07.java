@@ -6,8 +6,8 @@ import java.util.*;
 class TP05q07 {
     /**
      * Le ids dos games da entrada padrao ate achar FIM, procura id no csv,
-     * faz o parse do game para objeto e salva no final de uma Lista.
-     * Depois le nomes de jogos ate achar FIM e pesquisa eles na Lista de Games 
+     * faz o parse do game para objeto e salva em uma Tabela Hash.
+     * Depois le nomes de jogos ate achar FIM e pesquisa eles no Hash
      */
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis(); // tempo de inicio
@@ -29,7 +29,17 @@ class TP05q07 {
             gameID = input.readLine(); 
         }
 
-        // TODO: pesquisa
+        // pesquisa alguns nomes na tabela hash
+        String name = input.readLine(); 
+        
+        while(!isFIM(name)){
+            System.out.println("=> "+name);
+                      
+            if(!hashGames.pesquisar(name))
+                System.out.println("NAO");
+
+            name = input.readLine(); 
+        }
         
         long end = System.currentTimeMillis(); // tempo de fim
         // calcula tempo de execucao
@@ -74,22 +84,36 @@ class HashIndiretoLista {
     }
 
     // funcao hash
-    public int hash(Game elemento){
-       return elemento.valorASCIINome() % tamanho;
+    public int hash(String name){
+       return (valorASCII(name) % tamanho);
+    }
+    // pega valor ASCII de string
+    public int valorASCII(String str){
+        int val = 0;
+
+        for(int i = 0; i < str.length(); i++){
+            val += (int) str.charAt(i);
+        }
+
+        return val;
     }
     // pesquisa na tabela hash
-    boolean pesquisar(Game elemento){
-        int pos = hash(elemento);
+    boolean pesquisar(String name){
+        int pos = hash(name);
         
         // pesquisa na lista
-        boolean achou = tabela[pos].pesquisar(elemento);
+        boolean achou = tabela[pos].pesquisar(name);
+
+        if(achou)
+            System.out.println("Posicao: "+pos);
+
         comp = tabela[pos].getComp();
 
         return achou;
     }
     // insere no inicio da lista de uma posicao da tabela hash
     public void inserir(Game elemento){
-       int pos = hash(elemento);
+       int pos = hash(elemento.getName());
 
        // chama inserir da lista
        tabela[pos].inserirInicio(elemento);
@@ -98,10 +122,10 @@ class HashIndiretoLista {
     public Game remover(Game elemento) throws Exception{
         Game removido = null;
         
-        if( !pesquisar(elemento) ){
+        if( !pesquisar(elemento.getName()) ){
             throw new Exception("Erro ao remover! Elemento nao existe");
         } else{
-            int pos = hash(elemento);
+            int pos = hash(elemento.getName());
 
             // chama remover da lista
             int posLista = tabela[pos].pesquisarPos(elemento);
@@ -140,14 +164,14 @@ class Lista {
 	 * @return <code>true</code> se o game existir,
 	 * <code>false</code> caso contrario
 	 */
-	public boolean pesquisar(Game x) {
+	public boolean pesquisar(String x) {
 		comp = 0;
         boolean achou = false;
         
         Celula i = primeiro.prox;
         while( i != null && !achou ) {
             comp++;
-            if( i.elemento.equals(x) )
+            if( i.elemento.getName().equals(x) )
                 achou = true;
             
             i = i.prox;
