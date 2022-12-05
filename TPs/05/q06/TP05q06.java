@@ -6,8 +6,8 @@ import java.util.*;
 class TP05q06 {
     /**
      * Le ids dos games da entrada padrao ate achar FIM, procura id no csv,
-     * faz o parse do game para objeto e salva no final de uma Lista.
-     * Depois le nomes de jogos ate achar FIM e pesquisa eles na Lista de Games 
+     * faz o parse do game para objeto e salva em uma Tabela Hash.
+     * Depois le nomes de jogos ate achar FIM e pesquisa eles no Hash
      */
     public static void main(String[] args) throws Exception {
         long start = System.currentTimeMillis(); // tempo de inicio
@@ -29,7 +29,17 @@ class TP05q06 {
             gameID = input.readLine(); 
         }
 
-        // TODO: pesquisa
+        // pesquisa alguns nomes na tabela hash
+        String name = input.readLine(); 
+        
+        while(!isFIM(name)){
+            System.out.println("=> "+name);
+                      
+            if(!hashGames.pesquisar(name))
+                System.out.println("NAO");
+
+            name = input.readLine(); 
+        }
         
         long end = System.currentTimeMillis(); // tempo de fim
         // calcula tempo de execucao
@@ -41,13 +51,8 @@ class TP05q06 {
 
     // verifica se string é igual a "FIM"
     public static boolean isFIM(String str){
-        boolean fim = false;
-
-        if(str.length() == 3 && str.charAt(0) == 'F' && str.charAt(1) == 'I' && str.charAt(2) == 'M')
-            fim = true;
-        
-        return fim;
-    } 
+        return (str.equals("FIM"));
+    }
 }
 
 // classe HashDiretoRehash de Games
@@ -74,29 +79,43 @@ class HashDiretoRehash {
     }
 
     // funcao hash
-    public int hash(Game elemento){
-       return elemento.valorASCIINome() % tamanho;
+    public int hash(String name){
+        return (valorASCII(name) % tamanho);
     }
     // funcao rehash
-    public int rehash(Game elemento){
-        return (elemento.valorASCIINome() % tamanho) % tamanho;
+    public int rehash(String name){
+        return (valorASCII(name) % tamanho) % tamanho;
+    }
+    // pega valor ASCII de string
+    public int valorASCII(String str){
+        int soma = 0;
+
+        for(int i = 0; i < str.length(); i++){
+            int val = str.charAt(i);
+           
+            soma += val;
+        }
+
+        return soma;
     }
     // pesquisa na tabela hash
-    boolean pesquisar(Game elemento){
+    boolean pesquisar(String name){
         comp = 0;
         boolean achou = false;
         
-        int pos = hash(elemento);
-     
+        int pos = hash(name);
+        
         comp++;
-        if(tabela[pos] == elemento) {
+        if(tabela[pos].getName().equals(name)) {
             achou = true;
-        } else if (tabela[pos] != null) {
-            pos = rehash(elemento);
-            
+            System.out.println("Posicao: " + pos);
+        } else if(tabela[pos] != null) {
+            pos = rehash(name);
+
             comp++;
-            if (tabela[pos] == elemento) {
+            if(tabela[pos].getName().equals(name)) {
                 achou = true;
+                System.out.println("Posicao: " + pos);
             }
         }
 
@@ -108,14 +127,14 @@ class HashDiretoRehash {
 
         if(elemento != null){
             // procura posicao do elemento pela funcao hash
-            int pos = hash(elemento);
+            int pos = hash(elemento.getName());
             
             if(tabela[pos] == null){ // se pos estiver vazia, insere
                 tabela[pos] = elemento;
                 sucesso = true;
             } else{ // conflito (elemento ja inserido na pos)
                 // usa funcao de rehash p/achar nova pos
-                pos = rehash(elemento);
+                pos = rehash(elemento.getName());
                 
                 if(tabela[pos] == null){ // se pos estiver vazia, insere
                     tabela[pos] = elemento;
@@ -127,253 +146,6 @@ class HashDiretoRehash {
         return sucesso;
     }
 } 
-
-// classe Lista de Games
-class Lista {
-    // atributos
-    private Celula primeiro;
-	private Celula ultimo;
-    private int comp;
-    
-    /**
-	 * Construtor da classe que cria uma lista sem elementos (somente no cabeca)
-	 */
-	public Lista() {
-		primeiro = new Celula();
-		ultimo = primeiro;
-        comp = 0;
-	}
-    
-    public int getComp(){
-        return this.comp;
-    }
-
-    /**
-	 * Procura um game na Lista e retorna se ele existe
-	 * @param x Game a pesquisar
-	 * @return <code>true</code> se o game existir,
-	 * <code>false</code> caso contrario
-	 */
-	public boolean pesquisar(Game x) {
-		comp = 0;
-        boolean achou = false;
-        
-        Celula i = primeiro.prox;
-        while( i != null && !achou ) {
-            comp++;
-            if( i.elemento.equals(x) )
-                achou = true;
-            
-            i = i.prox;
-		}
-		
-        return achou;
-	}
-
-    /**
-	 * Procura um game na Lista e retorna sua posicao
-	 * @param x Game a pesquisar
-	 * @return posicao do game (-1 se nao achar)
-	 */
-	public int pesquisarPos(Game x) throws Exception{
-		comp = 0;
-        boolean achou = false;
-        int pos = 0;
-        
-        Celula i = primeiro.prox;
-        while( i != null && !achou ) {
-            comp++;
-            if( i.elemento.equals(x) )
-                achou = true;
-            
-            i = i.prox;
-            pos++;
-		}
-
-        if(!achou)
-            pos = -1;
-
-        return pos;
-	}
-   
-    /**
-	 * Insere um elemento na primeira posicao da lista.
-     * @param x Game elemento a ser inserido.
-	 */
-	public void inserirInicio(Game x) {
-		Celula tmp = new Celula(x);
-        
-        tmp.prox = primeiro.prox;
-		primeiro.prox = tmp;
-		
-        if(primeiro == ultimo) {                 
-			ultimo = tmp;
-		}
-        
-        tmp = null;
-	}
-
-	/**
-	 * Insere um elemento na ultima posicao da lista.
-     * @param x Game elemento a ser inserido.
-	 */
-	public void inserirFim(Game x) {
-		ultimo.prox = new Celula(x);
-		ultimo = ultimo.prox;
-	}
-
-	/**
-	 * Remove um elemento da primeira posicao da lista.
-     * @return resp Game elemento a ser removido.
-	 * @throws Exception Se a lista nao contiver elementos.
-	 */
-	public Game removerInicio() throws Exception {
-		if(primeiro == ultimo) {
-			throw new Exception("Erro ao remover (vazia)!");
-		}
-
-        Celula tmp = primeiro;
-		primeiro = primeiro.prox;
-		Game resp = primeiro.elemento;
-        
-        tmp.prox = tmp = null;
-
-		return resp;
-	}
-
-	/**
-	 * Remove um elemento da ultima posicao da lista.
-     * @return resp Game elemento a ser removido.
-	 * @throws Exception Se a lista nao contiver elementos.
-	 */
-	public Game removerFim() throws Exception {
-		if(primeiro == ultimo) {
-			throw new Exception("Erro ao remover (vazia)!");
-		} 
-
-		// Caminhar ate a penultima celula:
-        Celula i;
-        for(i = primeiro; i.prox != ultimo; i = i.prox);
-
-        Game resp = ultimo.elemento; 
-        ultimo = i; 
-
-        i = ultimo.prox = null;
-      
-		return resp;
-	}
-
-	/**
-     * Insere um elemento em uma posicao especifica considerando que o 
-     * primeiro elemento valido esta na posicao 0.
-     * @param x Game elemento a ser inserido.
-	 * @param pos int posicao da insercao.
-	 * @throws Exception Se <code>posicao</code> invalida.
-	 */
-    public void inserir(Game x, int pos) throws Exception {
-        int tamanho = tamanho();
-
-        if(pos < 0 || pos > tamanho){
-            throw new Exception("Erro ao inserir posicao (" + pos + " / tamanho = " + tamanho + ") invalida!");
-        } else if(pos == 0){
-            inserirInicio(x);
-        } else if(pos == tamanho){
-            inserirFim(x);
-        } else{
-            // Caminhar ate a posicao anterior a insercao
-            Celula i = primeiro;
-            for(int j = 0; j < pos; j++, i = i.prox);
-            
-            Celula tmp = new Celula(x);
-            tmp.prox = i.prox;
-            i.prox = tmp;
-            
-            tmp = i = null;
-        }
-    }
-
-	/**
-     * Remove um elemento de uma posicao especifica da lista
-     * considerando que o primeiro elemento valido esta na posicao 0.
-	 * @param posicao Meio da remocao.
-     * @return resp Game elemento a ser removido.
-	 * @throws Exception Se <code>posicao</code> invalida.
-	 */
-	public Game remover(int pos) throws Exception {
-        Game resp;
-        int tamanho = tamanho();
-
-        if (primeiro == ultimo){
-            throw new Exception("Erro ao remover (vazia)!");
-        } else if(pos < 0 || pos >= tamanho){
-            throw new Exception("Erro ao remover (posicao " + pos + " / " + tamanho + " invalida!");
-        } else if (pos == 0){
-            resp = removerInicio();
-        } else if (pos == tamanho - 1){
-            resp = removerFim();
-        } else {
-            // Caminhar ate a posicao anterior a remocao
-            Celula i = primeiro;
-            for(int j = 0; j < pos; j++, i = i.prox);
-            
-            Celula tmp = i.prox;
-            resp = tmp.elemento;
-            i.prox = tmp.prox;
-        
-            tmp.prox = i = tmp = null;
-        }
-
-        return resp;
-	}
-
-	/**
-	 * Mostra os elementos da lista separados por espacos.
-	 */
-	public void mostrar() {
-        int j = 0;
-
-        for(Celula i = primeiro.prox; i != null; i = i.prox, j++) {
-            System.out.print("["+j+"] ");
-			i.elemento.print();
-		}
-	}
-
-    /**
-	 * Calcula e retorna o tamanho, em numero de elementos, da lista.
-	 * @return resp int tamanho
-	 */
-    public int tamanho() {
-        int tamanho = 0; 
-        
-        for(Celula i = primeiro; i != ultimo; i = i.prox){
-            tamanho++;
-        }
-        
-        return tamanho;
-    }
-}
-
-// classe Celula de Game
-class Celula {
-	public Game elemento; // Elemento inserido na célula
-	public Celula prox; // Aponta a celula prox
-
-	/**
-	 * Construtor da classe.
-	 */
-	public Celula() {
-		this( new Game() );
-	}
-
-	/**
-	 * Construtor da classe.
-	 * @param elemento Game inserido na celula.
-	 */
-	public Celula(Game elemento) {
-        this.elemento = elemento;
-        this.prox = null;
-	}
-}
 
 // classe Game
 class Game{
@@ -516,17 +288,6 @@ class Game{
                      developers, genres);
 
         return novo;
-    }
-    
-    // pega valor ASCII do nome do Game
-    public int valorASCIINome(){
-        int val = 0;
-
-        for(int i = 0; i < this.name.length(); i++){
-            val += (int) name.charAt(i);
-        }
-
-        return val;
     }
 
     // imprimir
