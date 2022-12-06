@@ -84,7 +84,7 @@ class HashDiretoRehash {
     }
     // funcao rehash
     public int rehash(String name){
-        return (valorASCII(name) % tamanho) % tamanho;
+        return ((valorASCII(name) % tamanho) + 1) % tamanho;
     }
     // pega valor ASCII de string
     public int valorASCII(String str){
