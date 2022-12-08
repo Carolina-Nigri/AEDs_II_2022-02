@@ -6,9 +6,9 @@ import java.util.*;
 class TP05q02 {    
     /**
      * Le ids dos games da entrada padrao ate achar FIM, procura id no csv,
-     * faz o parse do game para objeto e salva em uma ArvoreBinaria.
+     * faz o parse do game para objeto e salva em uma ArvoreDeArvore.
      * Depois le qtd de insercoes e remocoes que serao feitas, le palavras de comando
-     * e insere/remove jogos da ArvoreBinaria de acordo com parametros da entrada,
+     * e insere/remove jogos da ArvoreDeArvore de acordo com parametros da entrada,
      * mostrando os removidos. Por fim, pesquisa elementos na arvore, mostrando 
      * caminhos de pesquisa.
      */
@@ -16,7 +16,7 @@ class TP05q02 {
         String file = "/tmp/games.csv";
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         
-        ArvoreBinaria arvoreGames = new ArvoreBinaria();
+        ArvoreDeArvore arvoreGames = new ArvoreDeArvore();
         String gameID = input.readLine(); 
         int id;
         
@@ -26,7 +26,7 @@ class TP05q02 {
             Game game = new Game();
             game.readFromFileID(file, id);
 
-            // salvar na ArvoreBinaria
+            // salvar na ArvoreDeArvore
             arvoreGames.inserir(game);
 
             gameID = input.readLine(); 
@@ -50,12 +50,12 @@ class TP05q02 {
             } else if(comando.charAt(0) == 'R'){ // remover
                 name = comando.substring(2, comando.length());
                 
-                arvoreGames.remover(name);
+                // arvoreGames.remover(name);
             }
         }
 
         long start = System.currentTimeMillis(); // tempo de inicio
-        FileWriter logFile = new FileWriter("matricula_arvoreBinaria.txt");
+        FileWriter logFile = new FileWriter("matricula_arvoreArvore.txt");
         
         // realiza pesquisas e mostra caminhos e resultado
         name = input.readLine();
@@ -64,9 +64,9 @@ class TP05q02 {
             System.out.println(name);
 
             if(arvoreGames.pesquisar(name))
-                System.out.println("SIM");
+                System.out.println(" SIM");
             else
-                System.out.println("NAO");
+                System.out.println(" NAO");
 
             name = input.readLine();
         }
@@ -84,36 +84,60 @@ class TP05q02 {
     }
 }
 
-// classe No de Game
-class No {
-    public Game elemento; // game do nó
-    public No esq, dir;  // filhos da esq e dir
+// classe NoExt
+class NoExt {
+    public char letra; // primeira letra do nome do game
+    public NoExt esq, dir;  // filhos da esq e dir
+    public NoInt raizInt; // raiz da arvore interna
 
     // construtores
-    public No(Game elemento){
+    public NoExt(char letra, NoInt raizInt){
+        this(letra, null, null, raizInt);
+    }
+    public NoExt(char letra){
+        this(letra, null, null, null);
+    }
+    public NoExt(char letra, NoExt esq, NoExt dir, NoInt raizInt){
+        this.letra = letra;
+        this.esq = esq;
+        this.dir = dir;
+        this.raizInt = raizInt;
+    }
+}
+
+// classe NoInt
+class NoInt {
+    public Game elemento; // game do nó
+    public NoInt esq, dir;  // filhos da esq e dir
+
+    // construtores
+    public NoInt(Game elemento){
         this(elemento, null, null);
     }
-    public No(Game elemento, No esq, No dir){
+    public NoInt(Game elemento, NoInt esq, NoInt dir){
         this.elemento = elemento;
         this.esq = esq;
         this.dir = dir;
     }
 }
 
-// classe ArvoreBinaria de Game
-class ArvoreBinaria {
-    private No raiz; // nó raiz da arvore binaria
+// classe ArvoreDeArvore
+class ArvoreDeArvore {
+    private NoExt raizExt; // nó raiz da arvore externa
     private int comp;
 
     // construtor
-    public ArvoreBinaria(){
-		raiz = null;
+    public ArvoreDeArvore() throws Exception{
+		raizExt = null;
         comp = 0;
+
+        // insere as 26 letras nos nós da árvore exteran
+        preencheArvoreExt();
 	}
 
     // gets
-    public No getRaiz(){
-        return raiz;
+    public NoExt getRaizExt(){
+        return raizExt;
     }
     public int getComp(){
         return comp;
@@ -121,23 +145,76 @@ class ArvoreBinaria {
     
     // metodos
     /**
-     * Chama função recursiva que insere um game na arvore binaria
-     * @param game Game a ser inserido
-     * @throws Exception se o elemento ja estiver na arvore
+     * Preenche arvore externa, inserindo as 26 letras do alfabeto em 
+     * ordem determinada
+     * @throws Exception se letra ja tiver sido inserida
      */
-    public void inserir(Game game) throws Exception{
-        raiz = inserir(game, raiz);
+    private void preencheArvoreExt() throws Exception{
+        char[] letras = {'D','R','Z','X','V','B','F','P','U','I','G','E','J',
+                         'L','H','T','A','W','S','O','M','N','K','C','Y','Q'};
+
+        for(int i = 0; i < letras.length; i++){
+            this.inserirLetra(letras[i]);
+        }
     }
     /**
-     * Insere game na arvore, procurando posicao de insercao recursivamente
-     * @param game Game a ser inserido
-     * @param i No em analise
-     * @return No em analise
-     * @throws Exception se o elemento ja estiver na arvore
+     * Chama função recursiva que insere uma letra na arvore binaria
+     * @param letra char a ser inserido
+     * @throws Exception se a letra ja estiver na arvore
      */
-    private No inserir(Game game, No i) throws Exception{
-        if(i == null){ // encontrou posição de inserção
-            i = new No(game);
+    public void inserirLetra(char letra) throws Exception{
+        this.raizExt = inserirLetra(letra, this.raizExt);
+    }
+    /**
+     * Insere letra na arvore, procurando posicao de insercao recursivamente
+     * @param letra char a ser inserido
+     * @param i NoExt em analise
+     * @return NoExt em analise
+     * @throws Exception se a letra ja estiver na arvore
+     */
+    private NoExt inserirLetra(char letra, NoExt i) throws Exception{
+        if(i == null){ // chegou à posição certa de inserção da letra na árvore
+            i = new NoExt(letra);
+        } else if(letra < i.letra){ // letra tem que estar à esquerda (menor)
+            // percorre esquerda da árvore recursivamente
+            i.esq = inserirLetra(letra, i.esq); 
+        } else if(letra > i.letra){ // letra tem que estar à direita (maior)
+            // percorre direita da árvore recursivamente
+            i.dir = inserirLetra(letra, i.dir);
+        } else{
+            throw new Exception("Erro ao inserir! Letra ja existente");
+        }
+
+		return i;
+	}
+    /**
+     * Insere game na arvore de arvore, pesquisando primeiro na arvore externa o
+     * nó que contém a primeira letra do nome do game para depois inserir o game
+     * na arvore interna
+     * @param game Game a ser inserido
+     * @throws Exception se nao encontrar letra do nome ou se game ja estiver inserido
+     */
+    public void inserir(Game game) throws Exception{
+        // pesquisa nó externo que contém primeira letra do nome do game 
+        NoExt pos = pesquisarLetra(game.getName().charAt(0), this.raizExt);
+        
+        // insere game na arvore interna
+        if(pos != null){
+            pos.raizInt = inserir(game, pos.raizInt);
+        } else{
+            throw new Exception("Erro ao inserir Game! Primeira letra do nome nao encontrada");
+        }
+    }
+    /** 
+     * Insere game na arvore interna, procurando posicao de insercao recursivamente
+     * @param game Game a ser inserido
+     * @param i NoInt em analise
+     * @return NoInt em analise
+     * @throws Exception se o game ja estiver na arvore
+     */
+    private NoInt inserir(Game game, NoInt i) throws Exception{
+        if(i == null){ // posicao de insercao
+            i = new NoInt(game);
         } else if( game.getName().compareTo(i.elemento.getName()) > 0 ){
             // nome do game a inserir vem antes do elemento do nó i => direita
             i.dir = inserir(game, i.dir);
@@ -145,29 +222,38 @@ class ArvoreBinaria {
             // nome do game a inserir vem depois do elemento do nó i => esquerda
             i.esq = inserir(game, i.esq);
         } else{ // nome do game a inserir eh igual ao elemento do nó i => erro
-            throw new Exception("Erro ao inserir! Elemento ja existente");
+            throw new Exception("Erro ao inserir! Game ja existente");
         }
 
         return i;
     }
     /**
-     * Chama função recursiva que remove elemento da arvore
+     * Chama função recursiva que remove game da arvore interna
      * @param name nome do Game a ser removido
-     * @throws Exception se percorrer parte da arvore e não encontrar elemento
-      */
+     * @throws Exception se nao encontrar letra do nome ou se percorrer arvore interna
+     * e não encontrar game
+     */
     public void remover(String name) throws Exception{
-        raiz = remover(name, raiz);
+        // pesquisa nó externo que contém primeira letra do nome do game 
+        NoExt pos = pesquisarLetra(name.charAt(0), this.raizExt);
+        
+        // remove game na arvore interna
+        if(pos != null){
+            pos.raizInt = remover(name, pos.raizInt);
+        } else{
+            throw new Exception("Erro ao remover Game! Primeira letra do nome nao encontrada");
+        }
     }
     /**
-     * Remove elemento da arvore binaria recursivamente
+     * Remove game da arvore interna recursivamente
      * @param name nome do Game a ser removido
-     * @param i No em analise
-     * @return No em analise
-     * @throws Exception se percorrer parte da arvore e não encontrar elemento
+     * @param i NoInt em analise
+     * @return NoInt em analise
+     * @throws Exception se percorrer parte da arvore e não encontrar game
      */
-    private No remover(String name, No i) throws Exception{
+    private NoInt remover(String name, NoInt i) throws Exception{
         if(i == null){ // nao encontrou elemento
-			throw new Exception("Erro ao remover! Elemento nao encontrado");
+			throw new Exception("Erro ao remover! Game nao encontrado");
 		} else if( name.compareTo(i.elemento.getName()) > 0 ){
 			// nome do game a remover vem antes do elemento do nó i => direita
             i.dir = remover(name, i.dir);
@@ -185,12 +271,12 @@ class ArvoreBinaria {
 		return i;
     }
     /**
-	 * Metodo para trocar o elemento "removido" pelo maior da esquerda.
-	 * @param i No que teve o elemento removido
-	 * @param j No da subarvore esquerda
-	 * @return No em analise, alterado ou nao
+	 * Metodo para trocar o elemento "removido" pelo maior da esquerda
+	 * @param i NoInt que teve o elemento removido
+	 * @param j NoInt da subarvore esquerda
+	 * @return NoInt em analise, alterado ou nao
 	 */
-    private No maiorEsq(No i, No j){
+    private NoInt maiorEsq(NoInt i, NoInt j){
 		if(j.dir == null){ // encontrou o maximo da subarvore esquerda
 			i.elemento = j.elemento; // troca i com j
 			j = j.esq; // troca j com j.esq
@@ -201,24 +287,68 @@ class ArvoreBinaria {
 		return j;
 	}
     /**
-     * Chama função recursiva que realiza pesquisa na arvore
-     * @param name nome do Game a ser pesquisado
-     * @return true se achar nome ou false caso contrario
+     * Pesquisa letra na arvore externa, retornando nó em que está 
+     * @param letra a ser pesquisada
+     * @param i NoExt em analise
+     * @return NoExt em analise 
      */
-    public boolean pesquisar(String name){
-        comp = 0;
-        System.out.print("raiz ");
-        return pesquisar(name, raiz);
+    public NoExt pesquisarLetra(char letra, NoExt i){
+        NoExt pos = null;
+
+        if(i != null){
+            if(i.letra == letra){ // achou 
+                pos = i;
+            } else if(letra < i.letra){ // pesquisa à esquerda
+                pos = pesquisarLetra(letra, i.esq);
+            } else if(letra > i.letra){ // pesquisa à direita
+                pos = pesquisarLetra(letra, i.dir);
+            }
+        }
+
+        return pos;
     }
     /**
-     * Realiza pesquisa na arvore recursivamente
+     * Realiza pesquisa na arvore de arvore
      * @param name nome do Game a ser pesquisado
-     * @param i No em analise
      * @return true se achar nome ou false caso contrario
      */
-    private boolean pesquisar(String name, No i){
-        boolean achou = false;
+    public boolean pesquisar(String name) throws Exception{
+        comp = 0;
+        System.out.print("raiz ");
+        return mostrar(name, raizExt);
+    }
+    /**
+     * Faz caminhamento na arvore externa e pesquisa na interna
+     * @param name String nome do game a ser pesquisado
+     * @param i NoExt em analise
+     * @return true se achar, false se nao
+     */
+    public boolean mostrar(String name, NoExt i){
+        boolean pesq = false;
+        
+        if(i != null){
+            pesq = pesquisar(name, i.raizInt);
+            
+            if(!pesq){
+                System.out.print(" ESQ ");
+                pesq = mostrar(name, i.esq);
+            } if(!pesq){
+                System.out.print(" DIR ");
+                pesq = mostrar(name, i.dir);
+            }
+        }
 
+        return pesq;
+    }
+    /**
+     * Realiza pesquisa na arvore interna recursivamente
+     * @param name nome do Game a ser pesquisado
+     * @param i NoInt em analise
+     * @return true se achar nome ou false caso contrario
+     */
+    private boolean pesquisar(String name, NoInt i){
+        boolean achou = false;
+        
         if(i == null){ // chegou ao ultimo no possivel e nao encontrou elemento
             achou = false;
         } else if( name.equals(i.elemento.getName()) ){ // encontrou nome do game procurado
