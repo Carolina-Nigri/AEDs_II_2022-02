@@ -3,20 +3,19 @@ import java.text.*;
 import java.util.*;
 
 // classe de execução
-class TP05q04 {    
+class TP05q04{    
     /**
      * Le ids dos games da entrada padrao ate achar FIM, procura id no csv,
-     * faz o parse do game para objeto e salva em uma ArvoreBinaria.
+     * faz o parse do game para objeto e salva em uma RedBlack.
      * Depois le qtd de insercoes e remocoes que serao feitas, le palavras de comando
-     * e insere/remove jogos da ArvoreBinaria de acordo com parametros da entrada,
-     * mostrando os removidos. Por fim, pesquisa elementos na arvore, mostrando 
-     * caminhos de pesquisa.
+     * e insere jogos da RedBlack de acordo com parametros da entrada. 
+     * Por fim, pesquisa elementos na arvore, mostrando caminhos de pesquisa.
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception{
         String file = "/tmp/games.csv";
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         
-        ArvoreBinaria arvoreGames = new ArvoreBinaria();
+        RedBlack arvoreGames = new RedBlack();
         String gameID = input.readLine(); 
         int id;
         
@@ -26,7 +25,7 @@ class TP05q04 {
             Game game = new Game();
             game.readFromFileID(file, id);
 
-            // salvar na ArvoreBinaria
+            // salvar na RedBlack
             arvoreGames.inserir(game);
 
             gameID = input.readLine(); 
@@ -50,12 +49,12 @@ class TP05q04 {
             } else if(comando.charAt(0) == 'R'){ // remover
                 name = comando.substring(2, comando.length());
                 
-                arvoreGames.remover(name);
+                // arvoreGames.remover(name);
             }
         }
 
         long start = System.currentTimeMillis(); // tempo de inicio
-        FileWriter logFile = new FileWriter("matricula_arvoreBinaria.txt");
+        FileWriter logFile = new FileWriter("matricula_avinegra.txt");
         
         // realiza pesquisas e mostra caminhos e resultado
         name = input.readLine();
@@ -85,28 +84,33 @@ class TP05q04 {
 }
 
 // classe No de Game
-class No {
+class No{
     public Game elemento; // game do nó
     public No esq, dir;  // filhos da esq e dir
+    public boolean cor; // cor do no (com ou sem) 
 
     // construtores
     public No(Game elemento){
-        this(elemento, null, null);
+        this(elemento, null, null, false);
     }
-    public No(Game elemento, No esq, No dir){
+    public No(Game elemento, boolean cor){
+        this(elemento, null, null, cor);
+    }
+    public No(Game elemento, No esq, No dir, boolean cor){
         this.elemento = elemento;
         this.esq = esq;
         this.dir = dir;
+        this.cor = cor;
     }
 }
 
-// classe ArvoreBinaria de Game
-class ArvoreBinaria {
+// classe RedBlack de Game
+class RedBlack{
     private No raiz; // nó raiz da arvore binaria
     private int comp;
 
     // construtor
-    public ArvoreBinaria(){
+    public RedBlack(){
 		raiz = null;
         comp = 0;
 	}
@@ -121,85 +125,99 @@ class ArvoreBinaria {
     
     // metodos
     /**
-     * Chama função recursiva que insere um game na arvore binaria
-     * @param game Game a ser inserido
+     * Insere um game na arvore RB, se arvore ja tiver 3 ou mais elementos, chama
+     * funcao recursiva
+     * @param elemento Game a ser inserido
      * @throws Exception se o elemento ja estiver na arvore
      */
-    public void inserir(Game game) throws Exception{
-        raiz = inserir(game, raiz);
-    }
-    /**
-     * Insere game na arvore, procurando posicao de insercao recursivamente
-     * @param game Game a ser inserido
-     * @param i No em analise
-     * @return No em analise
-     * @throws Exception se o elemento ja estiver na arvore
-     */
-    private No inserir(Game game, No i) throws Exception{
-        if(i == null){ // encontrou posição de inserção
-            i = new No(game);
-        } else if( game.getName().compareTo(i.elemento.getName()) > 0 ){
-            // nome do game a inserir vem antes do elemento do nó i => direita
-            i.dir = inserir(game, i.dir);
-        } else if( game.getName().compareTo(i.elemento.getName()) < 0 ){
-            // nome do game a inserir vem depois do elemento do nó i => esquerda
-            i.esq = inserir(game, i.esq);
-        } else{ // nome do game a inserir eh igual ao elemento do nó i => erro
-            throw new Exception("Erro ao inserir! Elemento ja existente");
+    public void inserir(Game elemento) throws Exception{
+        if(raiz == null){ // arvore vazia
+            raiz = new No(elemento); // cria raiz
+        } else if(raiz.esq == null && raiz.dir == null){ // 1 elemento (raiz)
+            if(elemento.getName().compareTo(raiz.elemento.getName()) < 0){
+                raiz.esq = new No(elemento);
+            } else{
+                raiz.dir = new No(elemento);
+            }
+        } else if(raiz.esq == null){ // 2 elementos (raiz e dir)
+            if(elemento.getName().compareTo(raiz.elemento.getName()) < 0){
+                raiz.esq = new No(elemento);
+            } else if(elemento.getName().compareTo(raiz.dir.elemento.getName()) < 0){
+                raiz.esq = new No(raiz.elemento);
+                raiz.elemento = elemento;
+            } else{
+                raiz.esq = new No(raiz.elemento);
+                raiz.elemento = raiz.dir.elemento;
+                raiz.dir.elemento = elemento;
+            }
+
+            raiz.esq.cor = raiz.dir.cor = false;
+        } else if(raiz.dir == null){ // 2 elementos (raiz e esq)
+            if(elemento.getName().compareTo(raiz.elemento.getName()) > 0){
+                raiz.dir = new No(elemento);
+            } else if(elemento.getName().compareTo(raiz.esq.elemento.getName()) > 0){
+                raiz.dir = new No(raiz.elemento);
+                raiz.elemento = elemento;
+            } else{
+                raiz.dir = new No(raiz.elemento);
+                raiz.elemento = raiz.esq.elemento;
+                raiz.esq.elemento = elemento;
+            }
+
+            raiz.esq.cor = raiz.dir.cor = false;
+        } else{ // 3 ou mais elementos 
+            inserir(elemento, null, null, null, raiz);
         }
 
-        return i;
+        raiz.cor = false;
     }
     /**
-     * Chama função recursiva que remove elemento da arvore
-     * @param name nome do Game a ser removido
-     * @throws Exception se percorrer parte da arvore e não encontrar elemento
-      */
-    public void remover(String name) throws Exception{
-        raiz = remover(name, raiz);
-    }
-    /**
-     * Remove elemento da arvore binaria recursivamente
-     * @param name nome do Game a ser removido
+     * Insere game na arvore RB quando ja tem 3 ou mais elementos, procurando posicao
+     * e ajustando cores/balanceamento
+     * @param elemento Game a ser inserido
+     * @param bisavo No bisavo do no em analise
+     * @param avo No avo do no em analise
+     * @param pai No pai do no em analise
      * @param i No em analise
-     * @return No em analise
-     * @throws Exception se percorrer parte da arvore e não encontrar elemento
+     * @throws Exception se o elemento ja tiver sido inserido
      */
-    private No remover(String name, No i) throws Exception{
-        if(i == null){ // nao encontrou elemento
-			throw new Exception("Erro ao remover! Elemento nao encontrado");
-		} else if( name.compareTo(i.elemento.getName()) > 0 ){
-			// nome do game a remover vem antes do elemento do nó i => direita
-            i.dir = remover(name, i.dir);
-		} else if( name.compareTo(i.elemento.getName()) < 0 ){
-			// nome do game a remover vem depois do elemento do nó i => esquerda
-            i.esq = remover(name, i.esq);
-		} else if(i.dir == null){ // Sem no a direita
-			i = i.esq;	
-		} else if(i.esq == null){ // Sem no a esquerda
-			i = i.dir;
-		} else{ // No a esquerda e no a direita
-			i.esq = maiorEsq(i, i.esq);
-		}
+    private void inserir(Game elemento, No bisavo, No avo, No pai, No i) throws Exception{
+        if(i == null){ // posicao de insercao
+            if(elemento.getName().compareTo(pai.elemento.getName()) < 0){
+                i = pai.esq = new No(elemento, true);
+            } else{
+                i = pai.dir = new No(elemento, true);
+            }
 
-		return i;
+            // balanceia se necessario
+            if(pai.cor == true){
+                balancear(bisavo, avo, pai, i);
+            }
+        } else{ 
+            // no do tipo 4: precisa fragmentar e reequilibrar a arvore
+            if(     i.esq != null && i.dir != null && 
+                i.esq.cor == true && i.dir.cor == true ){
+
+                i.cor = true;
+                i.esq.cor = i.dir.cor = false;
+
+                if(i == raiz){
+                    i.cor = false;
+                } else if(pai.cor == true){
+                    balancear(bisavo, avo, pai, i);
+                }
+            }
+
+            // procura posicao de insercao
+            if(elemento.getName().compareTo(i.elemento.getName()) < 0){
+                inserir(elemento, avo, pai, i, i.esq);
+            } else if(elemento.getName().compareTo(i.elemento.getName()) > 0){
+                inserir(elemento, avo, pai, i, i.dir);
+            } else{
+                throw new Exception("Erro ao inserir! Elemento ja inserido");
+            }
+        }
     }
-    /**
-	 * Metodo para trocar o elemento "removido" pelo maior da esquerda.
-	 * @param i No que teve o elemento removido
-	 * @param j No da subarvore esquerda
-	 * @return No em analise, alterado ou nao
-	 */
-    private No maiorEsq(No i, No j){
-		if(j.dir == null){ // encontrou o maximo da subarvore esquerda
-			i.elemento = j.elemento; // troca i com j
-			j = j.esq; // troca j com j.esq
-    	} else{ // existe no a direita
-			j.dir = maiorEsq(i, j.dir); // caminha para direita
-		}
-        
-		return j;
-	}
     /**
      * Chama função recursiva que realiza pesquisa na arvore
      * @param name nome do Game a ser pesquisado
@@ -238,6 +256,91 @@ class ArvoreBinaria {
 
         return achou;
     }
+    /**
+     * Balanceia arvore nas insercoes e remocoes, chamando funcoes de rotacao
+     * dependendo dos valores de fator de balanceamento
+     * @param no No em analise
+     */
+    private void balancear(No bisavo, No avo, No pai, No i){
+        if(pai.cor == true){ // se pai tem cor, reequilibrar a arvore, rotacionando o avo
+            // rotacionar a esquerda ou direita-esquerda
+            if(pai.elemento.getName().compareTo(avo.elemento.getName()) > 0){ 
+                if(i.elemento.getName().compareTo(pai.elemento.getName()) > 0 ){
+                    avo = rotacionarEsq(avo);
+                } else{
+                    avo = rotacionarDirEsq(avo);
+                }
+            } else{ // rotacionar a direita ou esquerda-direita
+                if(i.elemento.getName().compareTo(pai.elemento.getName()) < 0){
+                    avo = rotacionarDir(avo);
+                } else{
+                    avo = rotacionarEsqDir(avo);
+                }
+            }
+
+            if(bisavo == null){
+                raiz = avo;
+            } else if(avo.elemento.getName().compareTo(bisavo.elemento.getName()) < 0){
+                bisavo.esq = avo;
+            } else{
+                bisavo.dir = avo;
+            }
+
+            // reestabelecer as cores apos a rotacao
+            avo.cor = false;
+            avo.esq.cor = avo.dir.cor = true;
+        }
+	}
+    /**
+     * Rotaciona nos para a direita, trocando ponteiros necessarios
+     * @param no No pivo do desbalanceamento
+     * @return No substituido
+     */
+	private No rotacionarDir(No no){
+        No noEsq = no.esq;
+        No noEsqDir = noEsq.dir;
+
+        noEsq.dir = no;
+        no.esq = noEsqDir;
+
+        return noEsq;
+	}
+    /**
+     * Rotaciona nos para a esquerda, trocando ponteiros necessarios
+     * @param no No pivo do desbalanceamento
+     * @return No substituido
+     */
+	private No rotacionarEsq(No no){
+        No noDir = no.dir;
+        No noDirEsq = noDir.esq;
+
+        noDir.esq = no;
+        no.dir = noDirEsq;
+
+        return noDir;
+	}
+    /**
+     * Faz duas rotacoes nos nós: primeiro pra direita, depois pra esquerda,
+     * trocando ponteiros necessarios
+     * @param no No pivo do desbalanceamento
+     * @return No substituido
+     */
+    private No rotacionarDirEsq(No no){
+        no.dir = rotacionarDir(no.dir);
+        
+        return rotacionarEsq(no);
+    }
+    /**
+     * Faz duas rotacoes nos nós: primeiro pra esquerda, depois pra direita,
+     * trocando ponteiros necessarios
+     * @param no No pivo do desbalanceamento
+     * @return No substituido
+     */
+    private No rotacionarEsqDir(No no){
+        no.esq = rotacionarEsq(no.esq);
+        
+        return rotacionarDir(no);
+    }
 }
 
 // classe Game
@@ -251,11 +354,11 @@ class Game{
     private boolean windows, mac, linux;
     
     // construtores
-    public Game() { }
+    public Game(){ }
     public Game(int app_id, String name, Date release_date, String owners, int age, 
                 float price, int dlcs, String[] languages, String website, boolean 
                 windows, boolean mac, boolean linux, float upvotes, int avg_pt, 
-                String developers, String[] genres) {
+                String developers, String[] genres){
         
         this.app_id = app_id;
         this.name = name;
@@ -276,106 +379,106 @@ class Game{
     }
 
     // gets e sets
-    public int getApp_id() {
+    public int getApp_id(){
         return app_id;
     }
-    public void setApp_id(int app_id) {
+    public void setApp_id(int app_id){
         this.app_id = app_id;
     }
-    public String getName() {
+    public String getName(){
         return name;
     }
-    public void setName(String name) {
+    public void setName(String name){
         this.name = name;
     }
-    public Date getRelease_date() {
+    public Date getRelease_date(){
         return release_date;
     }
-    public void setRelease_date(Date release_date) {
+    public void setRelease_date(Date release_date){
         this.release_date = release_date;
     }
-    public String getOwners() {
+    public String getOwners(){
         return owners;
     }
-    public void setOwners(String owners) {
+    public void setOwners(String owners){
         this.owners = owners;
     }
-    public int getAge() {
+    public int getAge(){
         return age;
     }
-    public void setAge(int age) {
+    public void setAge(int age){
         this.age = age;
     }
-    public float getPrice() {
+    public float getPrice(){
         return price;
     }
-    public void setPrice(float price) {
+    public void setPrice(float price){
         this.price = price;
     }
-    public int getDlcs() {
+    public int getDlcs(){
         return dlcs;
     }
-    public void setDlcs(int dlcs) {
+    public void setDlcs(int dlcs){
         this.dlcs = dlcs;
     }
-    public String[] getLanguages() {
+    public String[] getLanguages(){
         return languages;
     }
-    public void setLanguages(String[] languages) {
+    public void setLanguages(String[] languages){
         this.languages = languages;
     }
-    public String getWebsite() {
+    public String getWebsite(){
         return website;
     }
-    public void setWebsite(String website) {
+    public void setWebsite(String website){
         this.website = website;
     }
-    public boolean getWindows() {
+    public boolean getWindows(){
         return windows;
     }
-    public void setWindows(boolean windows) {
+    public void setWindows(boolean windows){
         this.windows = windows;
     }
-    public boolean getMac() {
+    public boolean getMac(){
         return mac;
     }
-    public void setMac(boolean mac) {
+    public void setMac(boolean mac){
         this.mac = mac;
     }
-    public boolean getLinux() {
+    public boolean getLinux(){
         return linux;
     }
-    public void setLinux(boolean linux) {
+    public void setLinux(boolean linux){
         this.linux = linux;
     }
-    public float getUpvotes() {
+    public float getUpvotes(){
         return upvotes;
     }
-    public void setUpvotes(float upvotes) {
+    public void setUpvotes(float upvotes){
         this.upvotes = upvotes;
     }
-    public int getAvg_pt() {
+    public int getAvg_pt(){
         return avg_pt;
     }
-    public void setAvg_pt(int avg_pt) {
+    public void setAvg_pt(int avg_pt){
         this.avg_pt = avg_pt;
     }
-    public String getDevelopers() {
+    public String getDevelopers(){
         return developers;
     }
-    public void setDevelopers(String developers) {
+    public void setDevelopers(String developers){
         this.developers = developers;
     }
-    public String[] getGenres() {
+    public String[] getGenres(){
         return genres;
     }
-    public void setGenres(String[] genres) {
+    public void setGenres(String[] genres){
         this.genres = genres;
     }
 
     // clone (sobreescreve função da superclasse Object)
     @Override
-    public Game clone() {
+    public Game clone(){
         Game novo = new Game(app_id, name, release_date, owners, age, price, dlcs, 
                      languages, website, windows, mac, linux, upvotes, avg_pt,
                      developers, genres);
@@ -410,7 +513,7 @@ class Game{
         // imprime atributo avg_pt em h e min, se for 0 imprime "null"
         if(avg_pt == 0){
             System.out.print("null ");
-        } else {
+        } else{
             if((avg_pt / 60) != 0) System.out.print((avg_pt / 60)+"h ");
             if((avg_pt % 60) != 0) System.out.print((avg_pt % 60) +"m ");
         } 
@@ -521,7 +624,7 @@ class Game{
     }
 
     // salva atributos no objeto
-    public void getAttributes(String[] atr) throws Exception {
+    public void getAttributes(String[] atr) throws Exception{
         // inteiros
         this.app_id = Integer.parseInt(atr[0]);
         this.age = Integer.parseInt(atr[4]);
@@ -560,7 +663,7 @@ class Game{
     }
 
     // transforma string em array de strings
-    public static String[] createArrayStrings(String str) {
+    public static String[] createArrayStrings(String str){
         String[] array = new String[50];
         int i = 0, j = 0;
         array[0] = "";
