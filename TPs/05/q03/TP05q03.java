@@ -3,20 +3,20 @@ import java.text.*;
 import java.util.*;
 
 // classe de execução
-class TP05q03 {    
+class TP05q03{    
     /**
      * Le ids dos games da entrada padrao ate achar FIM, procura id no csv,
-     * faz o parse do game para objeto e salva em uma ArvoreBinaria.
+     * faz o parse do game para objeto e salva em uma AVL.
      * Depois le qtd de insercoes e remocoes que serao feitas, le palavras de comando
-     * e insere/remove jogos da ArvoreBinaria de acordo com parametros da entrada,
+     * e insere/remove jogos da AVL de acordo com parametros da entrada,
      * mostrando os removidos. Por fim, pesquisa elementos na arvore, mostrando 
      * caminhos de pesquisa.
      */
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) throws Exception{
         String file = "/tmp/games.csv";
         BufferedReader input = new BufferedReader(new InputStreamReader(System.in));
         
-        ArvoreBinaria arvoreGames = new ArvoreBinaria();
+        AVL arvoreGames = new AVL();
         String gameID = input.readLine(); 
         int id;
         
@@ -26,7 +26,7 @@ class TP05q03 {
             Game game = new Game();
             game.readFromFileID(file, id);
 
-            // salvar na ArvoreBinaria
+            // salvar na AVL
             arvoreGames.inserir(game);
 
             gameID = input.readLine(); 
@@ -55,7 +55,7 @@ class TP05q03 {
         }
 
         long start = System.currentTimeMillis(); // tempo de inicio
-        FileWriter logFile = new FileWriter("matricula_arvoreBinaria.txt");
+        FileWriter logFile = new FileWriter("matricula_avl.txt");
         
         // realiza pesquisas e mostra caminhos e resultado
         name = input.readLine();
@@ -85,28 +85,43 @@ class TP05q03 {
 }
 
 // classe No de Game
-class No {
+class No{
     public Game elemento; // game do nó
     public No esq, dir;  // filhos da esq e dir
+    public int nivel;   // numero de niveis abaixo do no 
 
     // construtores
     public No(Game elemento){
-        this(elemento, null, null);
+        this(elemento, null, null, 1);
     }
-    public No(Game elemento, No esq, No dir){
+    public No(Game elemento, No esq, No dir, int nivel){
         this.elemento = elemento;
         this.esq = esq;
         this.dir = dir;
+        this.nivel = nivel;
     }
+
+    // sets e gets
+    public void setNivel(){
+		this.nivel = 1 + Math.max(getNivel(esq), getNivel(dir));
+	}
+    public static int getNivel(No no){
+        int nivel = 0;
+
+        if(no != null)
+            nivel = no.nivel;
+
+		return nivel;
+	}
 }
 
-// classe ArvoreBinaria de Game
-class ArvoreBinaria {
+// classe AVL de Game
+class AVL{
     private No raiz; // nó raiz da arvore binaria
     private int comp;
 
     // construtor
-    public ArvoreBinaria(){
+    public AVL(){
 		raiz = null;
         comp = 0;
 	}
@@ -148,7 +163,7 @@ class ArvoreBinaria {
             throw new Exception("Erro ao inserir! Elemento ja existente");
         }
 
-        return i;
+        return balancear(i); // faz balanceamente no fim
     }
     /**
      * Chama função recursiva que remove elemento da arvore
@@ -182,7 +197,7 @@ class ArvoreBinaria {
 			i.esq = maiorEsq(i, i.esq);
 		}
 
-		return i;
+		return balancear(i); // faz balanceamente no fim
     }
     /**
 	 * Metodo para trocar o elemento "removido" pelo maior da esquerda.
@@ -238,6 +253,80 @@ class ArvoreBinaria {
 
         return achou;
     }
+    /**
+     * Balanceia arvore nas insercoes e remocoes, chamando funcoes de rotacao
+     * dependendo dos valores de fator de balanceamento
+     * @param no No em analise
+     * @return No em analise
+     * @throws Exception se o fator for invalido (> 2 ou < -2)
+     */
+    private No balancear(No no) throws Exception{
+		if(no != null){
+            // calcula fator de balanceamento
+			int fator = No.getNivel(no.dir) - No.getNivel(no.esq);
+			
+			if(Math.abs(fator) <= 1){ // balanceada
+				no.setNivel(); // atualiza valor do nivel do no
+			} else if(fator == 2){ // desbalanceada para a direita
+                // calcula fator do filho da direita
+				int fatorDir = No.getNivel(no.dir.dir) - No.getNivel(no.dir.esq);
+				
+                // filho a direita tambem esta desbalanceado
+				if(fatorDir == -1){
+					no.dir = rotacionarDir(no.dir);
+				}
+
+				no = rotacionarEsq(no);
+			} else if(fator == -2){ // desbalanceada para a esquerda
+				// calcula fator do filho da esquerda
+                int fatorEsq = No.getNivel(no.esq.dir) - No.getNivel(no.esq.esq);
+				
+                // filho a esquerda tambem esta desbalanceado
+				if(fatorEsq == 1){
+					no.esq = rotacionarEsq(no.esq);
+				}
+
+				no = rotacionarDir(no);
+			} else{ // fator invalido
+				throw new Exception("Erro no No("+no.elemento+") com fator ("+fator+") invalido!");
+			}
+		}
+
+		return no;
+	}
+    /**
+     * Rotaciona nos para a direita, trocando ponteiros necessarios
+     * @param no No pivo do desbalanceamento
+     * @return No substituido
+     */
+	private No rotacionarDir(No no){
+		No noEsq = no.esq;
+		No noEsqDir = noEsq.dir;
+
+		noEsq.dir = no;
+		no.esq = noEsqDir;
+		no.setNivel(); // atualizar o nivel do no
+		noEsq.setNivel(); // atualizar o nivel do noEsq
+
+		return noEsq;
+	}
+    /**
+     * Rotaciona nos para a esquerda, trocando ponteiros necessarios
+     * @param no No pivo do desbalanceamento
+     * @return No substituido
+     */
+	private No rotacionarEsq(No no){
+		No noDir = no.dir;
+		No noDirEsq = noDir.esq;
+
+		noDir.esq = no;
+		no.dir = noDirEsq;
+
+		no.setNivel(); // atualizar o nivel do no
+		noDir.setNivel(); // atualizar o nivel do noDir
+
+		return noDir;
+	}
 }
 
 // classe Game
@@ -251,11 +340,11 @@ class Game{
     private boolean windows, mac, linux;
     
     // construtores
-    public Game() { }
+    public Game(){ }
     public Game(int app_id, String name, Date release_date, String owners, int age, 
                 float price, int dlcs, String[] languages, String website, boolean 
                 windows, boolean mac, boolean linux, float upvotes, int avg_pt, 
-                String developers, String[] genres) {
+                String developers, String[] genres){
         
         this.app_id = app_id;
         this.name = name;
@@ -276,106 +365,106 @@ class Game{
     }
 
     // gets e sets
-    public int getApp_id() {
+    public int getApp_id(){
         return app_id;
     }
-    public void setApp_id(int app_id) {
+    public void setApp_id(int app_id){
         this.app_id = app_id;
     }
-    public String getName() {
+    public String getName(){
         return name;
     }
-    public void setName(String name) {
+    public void setName(String name){
         this.name = name;
     }
-    public Date getRelease_date() {
+    public Date getRelease_date(){
         return release_date;
     }
-    public void setRelease_date(Date release_date) {
+    public void setRelease_date(Date release_date){
         this.release_date = release_date;
     }
-    public String getOwners() {
+    public String getOwners(){
         return owners;
     }
-    public void setOwners(String owners) {
+    public void setOwners(String owners){
         this.owners = owners;
     }
-    public int getAge() {
+    public int getAge(){
         return age;
     }
-    public void setAge(int age) {
+    public void setAge(int age){
         this.age = age;
     }
-    public float getPrice() {
+    public float getPrice(){
         return price;
     }
-    public void setPrice(float price) {
+    public void setPrice(float price){
         this.price = price;
     }
-    public int getDlcs() {
+    public int getDlcs(){
         return dlcs;
     }
-    public void setDlcs(int dlcs) {
+    public void setDlcs(int dlcs){
         this.dlcs = dlcs;
     }
-    public String[] getLanguages() {
+    public String[] getLanguages(){
         return languages;
     }
-    public void setLanguages(String[] languages) {
+    public void setLanguages(String[] languages){
         this.languages = languages;
     }
-    public String getWebsite() {
+    public String getWebsite(){
         return website;
     }
-    public void setWebsite(String website) {
+    public void setWebsite(String website){
         this.website = website;
     }
-    public boolean getWindows() {
+    public boolean getWindows(){
         return windows;
     }
-    public void setWindows(boolean windows) {
+    public void setWindows(boolean windows){
         this.windows = windows;
     }
-    public boolean getMac() {
+    public boolean getMac(){
         return mac;
     }
-    public void setMac(boolean mac) {
+    public void setMac(boolean mac){
         this.mac = mac;
     }
-    public boolean getLinux() {
+    public boolean getLinux(){
         return linux;
     }
-    public void setLinux(boolean linux) {
+    public void setLinux(boolean linux){
         this.linux = linux;
     }
-    public float getUpvotes() {
+    public float getUpvotes(){
         return upvotes;
     }
-    public void setUpvotes(float upvotes) {
+    public void setUpvotes(float upvotes){
         this.upvotes = upvotes;
     }
-    public int getAvg_pt() {
+    public int getAvg_pt(){
         return avg_pt;
     }
-    public void setAvg_pt(int avg_pt) {
+    public void setAvg_pt(int avg_pt){
         this.avg_pt = avg_pt;
     }
-    public String getDevelopers() {
+    public String getDevelopers(){
         return developers;
     }
-    public void setDevelopers(String developers) {
+    public void setDevelopers(String developers){
         this.developers = developers;
     }
-    public String[] getGenres() {
+    public String[] getGenres(){
         return genres;
     }
-    public void setGenres(String[] genres) {
+    public void setGenres(String[] genres){
         this.genres = genres;
     }
 
     // clone (sobreescreve função da superclasse Object)
     @Override
-    public Game clone() {
+    public Game clone(){
         Game novo = new Game(app_id, name, release_date, owners, age, price, dlcs, 
                      languages, website, windows, mac, linux, upvotes, avg_pt,
                      developers, genres);
@@ -410,7 +499,7 @@ class Game{
         // imprime atributo avg_pt em h e min, se for 0 imprime "null"
         if(avg_pt == 0){
             System.out.print("null ");
-        } else {
+        } else{
             if((avg_pt / 60) != 0) System.out.print((avg_pt / 60)+"h ");
             if((avg_pt % 60) != 0) System.out.print((avg_pt % 60) +"m ");
         } 
@@ -521,7 +610,7 @@ class Game{
     }
 
     // salva atributos no objeto
-    public void getAttributes(String[] atr) throws Exception {
+    public void getAttributes(String[] atr) throws Exception{
         // inteiros
         this.app_id = Integer.parseInt(atr[0]);
         this.age = Integer.parseInt(atr[4]);
@@ -560,7 +649,7 @@ class Game{
     }
 
     // transforma string em array de strings
-    public static String[] createArrayStrings(String str) {
+    public static String[] createArrayStrings(String str){
         String[] array = new String[50];
         int i = 0, j = 0;
         array[0] = "";
